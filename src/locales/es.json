@@ -1,0 +1,134 @@
+{
+  "app": {
+    "name": "Cheshbon HaNefesh",
+    "tagline": "Práctica diaria de auto-evaluación espiritual"
+  },
+  "nav": {
+    "today": "Hoy",
+    "history": "Historial",
+    "progress": "Progreso",
+    "goals": "Objetivos",
+    "settings": "Configuración"
+  },
+  "onboarding": {
+    "step1": {
+      "title": "Cheshbon HaNefesh",
+      "subtitle": "חשבון הנפש",
+      "body": "El Cheshbon HaNefesh es una práctica de auto-evaluación espiritual basada en el sefer de R. Mendel de Satanov (1808). Cada día evaluás tu conducta en 13 middot —virtudes del carácter— para crecer como persona.",
+      "how": "¿Cómo funciona?",
+      "how1": "El año se divide en ciclos de 13 semanas.",
+      "how2": "Cada semana tiene una middah de foco intensivo.",
+      "how3": "Cada día evaluás las 13 middot con una puntuación.",
+      "how4": "Registrás reflexiones en un diario personal.",
+      "next": "Comenzar"
+    },
+    "step2": {
+      "title": "Inicio del primer ciclo",
+      "body": "¿Cuándo empezaste o querés empezar tu práctica? Esta fecha define el ritmo de los ciclos.",
+      "label": "Fecha de inicio",
+      "hint": "Podés cambiarla después en Configuración",
+      "next": "Siguiente"
+    },
+    "step3": {
+      "title": "Recordatorio diario",
+      "body": "¿A qué hora querés que te recuerde hacer tu cheshbon?",
+      "label": "Hora del recordatorio",
+      "notifications": "Activar notificaciones",
+      "notificationsHint": "Podés activarlas después desde Configuración",
+      "finish": "Comenzar mi práctica"
+    }
+  },
+  "today": {
+    "cycle": "Ciclo {{cycle}}",
+    "week": "Semana {{week}} de 13",
+    "weekFocus": "Middah de la semana",
+    "prompt": "Pregunta de reflexión",
+    "allMiddot": "Las 13 middot",
+    "journalLabel": "Diario del día",
+    "journalPlaceholder": "Reflexiones libres sobre el día...",
+    "save": "Guardar entrada del día",
+    "saved": "¡Guardado!",
+    "alreadySaved": "Ya guardaste hoy",
+    "scores": {
+      "n2": "Fracaso",
+      "n1": "Débil",
+      "0": "Neutro",
+      "p1": "Bien",
+      "p2": "Excelente"
+    }
+  },
+  "history": {
+    "title": "Historial",
+    "noEntry": "Sin registro",
+    "entryOf": "Entrada del {{date}}",
+    "journalTitle": "Diario",
+    "noJournal": "Sin notas escritas",
+    "focusMiddah": "Middah de la semana"
+  },
+  "progress": {
+    "title": "Progreso",
+    "avgTitle": "Promedio diario",
+    "byMiddah": "Por middah (últ. 4 semanas)",
+    "streak": "Racha actual",
+    "streakDays": "{{count}} día",
+    "streakDays_plural": "{{count}} días",
+    "adherence": "Adherencia",
+    "adherenceDesc": "Días registrados en el ciclo actual",
+    "range": {
+      "30": "30 días",
+      "90": "90 días",
+      "365": "1 año"
+    }
+  },
+  "goals": {
+    "title": "Objetivos",
+    "weekly": "Esta semana",
+    "monthly": "Este mes",
+    "history": "Historial",
+    "add": "Agregar objetivo",
+    "addWeekly": "Nuevo objetivo semanal",
+    "addMonthly": "Nuevo objetivo mensual",
+    "placeholder": "¿Qué querés trabajar?",
+    "middahOptional": "Middah relacionada (opcional)",
+    "none": "Sin middah específica",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "empty": "Sin objetivos para este período",
+    "completed": "Completado",
+    "pending": "Pendiente"
+  },
+  "settings": {
+    "title": "Configuración",
+    "reminder": "Recordatorio diario",
+    "language": "Idioma",
+    "theme": "Tema",
+    "themeLight": "Claro",
+    "themeDark": "Oscuro",
+    "themeSystem": "Sistema",
+    "cycleStart": "Inicio del primer ciclo",
+    "export": "Exportar datos",
+    "exportDesc": "Descarga un archivo JSON con todos tus datos",
+    "import": "Importar datos",
+    "importDesc": "Reemplaza tus datos actuales con un archivo JSON",
+    "importConfirm": "¿Estás seguro? Esto reemplazará TODOS tus datos actuales.",
+    "reset": "Resetear todo",
+    "resetConfirm": "¿Estás seguro? Esta acción es irreversible y borrará todos tus datos.",
+    "resetConfirm2": "Escribí BORRAR para confirmar",
+    "languages": {
+      "es": "Español",
+      "en": "English",
+      "he": "עברית"
+    }
+  },
+  "common": {
+    "loading": "Cargando...",
+    "error": "Algo salió mal",
+    "close": "Cerrar",
+    "confirm": "Confirmar",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "back": "Volver"
+  }
+}
