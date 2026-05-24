@@ -9,6 +9,7 @@ import { Button } from '../components/ui/Button'
 import { ScoreButton } from '../components/ui/ScoreButton'
 import { CircularProgress } from '../components/ui/CircularProgress'
 import { MiddahInfoSheet } from '../components/ui/MiddahInfoSheet'
+import { MiddahTargetModal } from '../components/ui/MiddahTargetModal'
 import { useSettingsStore } from '../core/stores/settingsStore'
 import { useEntriesStore } from '../core/stores/entriesStore'
 import { getEntriesRange } from '../core/api/data'
@@ -20,10 +21,11 @@ const SCORES: Score[] = [-2, -1, 0, 1, 2]
 
 export const Today = () => {
   const { t } = useTranslation()
-  const { settings } = useSettingsStore()
+  const { settings, updateSettings } = useSettingsStore()
   const { todayEntry, loadToday, setScore, setJournal, saveToday } = useEntriesStore()
   const [saved, setSaved] = useState(false)
   const [infoMiddah, setInfoMiddah] = useState<Middah | null>(null)
+  const [editingMiddah, setEditingMiddah] = useState<Middah | null>(null)
   const [weekEntries, setWeekEntries] = useState<DailyEntry[]>([])
 
   const todayStr = format(new Date(), 'yyyy-MM-dd')
@@ -53,6 +55,13 @@ export const Today = () => {
     await saveToday()
     setSaved(true)
     setTimeout(() => setSaved(false), 3000)
+  }
+
+  const handleSaveTarget = async (middahId: number, target: number) => {
+    const next = { ...middahTargets }
+    if (target === 0) delete next[middahId]
+    else next[middahId] = target
+    await updateSettings({ middahTargets: next })
   }
 
   const weeklyScore = (middahId: number) =>
@@ -106,13 +115,14 @@ export const Today = () => {
                 value={weeklyScore(middah.id)}
                 target={middahTargets[middah.id] ?? 0}
                 size={72}
+                onEdit={() => setEditingMiddah(middah)}
               />
             ))}
           </div>
         </div>
 
         <p className="text-[10px] text-sepia-400 mt-2 px-0.5">
-          Tocá un círculo en Objetivos para ajustar la meta
+          Tocá cualquier círculo para cambiar tu objetivo semanal
         </p>
       </Card>
 
@@ -224,6 +234,15 @@ export const Today = () => {
       </Button>
 
       <MiddahInfoSheet middah={infoMiddah} onClose={() => setInfoMiddah(null)} />
+
+      {editingMiddah && (
+        <MiddahTargetModal
+          middah={editingMiddah}
+          currentTarget={middahTargets[editingMiddah.id] ?? 0}
+          onSave={(target) => handleSaveTarget(editingMiddah.id, target)}
+          onClose={() => setEditingMiddah(null)}
+        />
+      )}
     </div>
   )
 }
