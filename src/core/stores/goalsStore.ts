@@ -1,9 +1,8 @@
 import { create } from 'zustand'
 import { v4 as uuidv4 } from 'uuid'
 import type { Goal } from '../domain/types'
-import { getGoals, saveGoal, updateGoal, deleteGoal } from '../storage/db'
+import { getGoals, saveGoal, updateGoal, deleteGoal } from '../api/data'
 
-// uuid no tiene tipos propios — pequeño workaround inline
 declare module 'uuid' { export function v4(): string }
 
 interface GoalsState {

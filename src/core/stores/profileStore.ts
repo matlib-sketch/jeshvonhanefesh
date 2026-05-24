@@ -1,13 +1,13 @@
 import { create } from 'zustand'
-import type { Profile } from '../storage/profiles'
 import {
-  getProfiles, createProfile, verifyPin, profileHasPin,
-  deleteProfileAndData, setSession, getSession, clearSession,
-} from '../storage/profiles'
+  listUsers, register, login, logout as apiLogout, deleteUser,
+  type ApiProfile,
+} from '../api/users'
+import { getUserId } from '../api/client'
 
 interface ProfileState {
-  profiles: Profile[]
-  currentProfile: Profile | null
+  profiles: ApiProfile[]
+  currentProfile: ApiProfile | null
   loading: boolean
   loadProfiles: () => Promise<void>
   loginWithPin: (profileId: string, pin: string) => Promise<boolean>
@@ -17,52 +17,55 @@ interface ProfileState {
   deleteProfile: (id: string) => Promise<void>
 }
 
-export const useProfileStore = create<ProfileState>((set) => ({
+export const useProfileStore = create<ProfileState>((set, get) => ({
   profiles: [],
   currentProfile: null,
   loading: true,
 
   loadProfiles: async () => {
-    const profiles = await getProfiles()
-    const sessionId = getSession()
-    const currentProfile = sessionId ? (profiles.find((p) => p.id === sessionId) ?? null) : null
-    set({ profiles, currentProfile, loading: false })
+    try {
+      const profiles = await listUsers()
+      const userId = getUserId()
+      const currentProfile = userId ? (profiles.find((p) => p.id === userId) ?? null) : null
+      set({ profiles, currentProfile, loading: false })
+    } catch {
+      set({ profiles: [], currentProfile: null, loading: false })
+    }
   },
 
   loginWithPin: async (profileId, pin) => {
-    const ok = await verifyPin(profileId, pin)
+    const ok = await login(profileId, pin)
     if (!ok) return false
-    setSession(profileId)
     window.location.reload()
     return true
   },
 
   loginDirect: async (profileId) => {
-    const hasPin = await profileHasPin(profileId)
-    if (hasPin) return false  // requiere PIN — usar loginWithPin
-    setSession(profileId)
+    const profile = get().profiles.find((p) => p.id === profileId)
+    if (!profile || profile.has_pin) return false
+    const ok = await login(profileId, '')
+    if (!ok) return false
     window.location.reload()
     return true
   },
 
   logout: () => {
-    clearSession()
+    apiLogout()
     window.location.reload()
   },
 
   createAndLogin: async (name, color, pin) => {
-    const profile = await createProfile(name, color, pin)
-    setSession(profile.id)
+    await register(name, color, pin)
     window.location.reload()
   },
 
   deleteProfile: async (id) => {
-    await deleteProfileAndData(id)
-    const profiles = await getProfiles()
+    const currentId = getUserId()
+    await deleteUser(id)
+    const profiles = await listUsers()
     set({ profiles })
-    // Si era el perfil activo, hacer logout
-    if (getSession() === id) {
-      clearSession()
+    if (currentId === id) {
+      apiLogout()
       window.location.reload()
     }
   },

@@ -11,20 +11,23 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "start": "serve dist -l $PORT"
+    "start": "node server/index.js"
   },
   "dependencies": {
     "@hebcal/core": "^6.5.1",
+    "cors": "^2.8.5",
     "date-fns": "^4.3.0",
     "dexie": "^4.4.2",
+    "express": "^4.21.2",
     "i18next": "^26.2.0",
+    "jsonwebtoken": "^9.0.2",
     "lucide-react": "^1.16.0",
+    "pg": "^8.13.3",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "react-i18next": "^17.0.8",
     "react-router-dom": "^7.15.1",
     "recharts": "^3.8.1",
-    "serve": "^14.2.6",
     "uuid": "^14.0.0",
     "zustand": "^5.0.13"
   },

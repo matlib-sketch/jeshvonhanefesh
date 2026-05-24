@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import type { UserSettings } from '../domain/types'
-import { getSettings, saveSettings } from '../storage/db'
+import { getSettings, saveSettings } from '../api/data'
 
 interface SettingsState {
   settings: UserSettings | null

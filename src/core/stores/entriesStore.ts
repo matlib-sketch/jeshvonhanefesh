@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { format } from 'date-fns'
 import type { DailyEntry, Score } from '../domain/types'
-import { saveEntry, getEntry, getEntriesRange, getAllEntries } from '../storage/db'
+import { saveEntry, getEntry, getEntriesRange, getAllEntries } from '../api/data'
 
 interface EntriesState {
   todayEntry: DailyEntry | null

@@ -7,7 +7,7 @@ import { Card } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
 import { useSettingsStore } from '../core/stores/settingsStore'
 import { useProfileStore } from '../core/stores/profileStore'
-import { exportAllData, importAllData, resetAllData } from '../core/storage/db'
+import { exportAllData, importAllData, resetAllData } from '../core/api/data'
 import type { UserSettings, CustomMiddah } from '../core/domain/types'
 
 // --- Formulario para agregar una middah personalizada ---
@@ -367,7 +367,7 @@ export const Settings = () => {
             </div>
             <div className="flex-1 min-w-0">
               <p className="font-semibold text-sepia-900 dark:text-sepia-50">{currentProfile.name}</p>
-              <p className="text-xs text-sepia-500">{currentProfile.pinHash ? 'Con PIN' : 'Sin PIN'}</p>
+              <p className="text-xs text-sepia-500">{currentProfile.has_pin ? 'Con PIN' : 'Sin PIN'}</p>
             </div>
             <button
               onClick={logout}

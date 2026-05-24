@@ -2,8 +2,7 @@ import { useState, useEffect } from 'react'
 import { ArrowLeft, Plus, Trash2 } from 'lucide-react'
 import { Button } from '../components/ui/Button'
 import { useProfileStore } from '../core/stores/profileStore'
-import type { Profile } from '../core/storage/profiles'
-import { profileHasPin } from '../core/storage/profiles'
+import type { ApiProfile } from '../core/api/users'
 
 // ── Colores de avatar disponibles ──
 const COLORS = [
@@ -16,7 +15,7 @@ const COLORS = [
 ]
 
 // ── Círculo de avatar ──
-const Avatar = ({ profile, size = 56 }: { profile: Pick<Profile, 'name' | 'color'>; size?: number }) => (
+const Avatar = ({ profile, size = 56 }: { profile: Pick<ApiProfile, 'name' | 'color'>; size?: number }) => (
   <div
     className="rounded-full flex items-center justify-center text-white font-bold shrink-0"
     style={{ width: size, height: size, backgroundColor: profile.color, fontSize: size * 0.38 }}
@@ -77,7 +76,7 @@ const PinView = ({
   onSuccess,
   onBack,
 }: {
-  profile: Profile
+  profile: ApiProfile
   onSuccess: (profileId: string, pin: string) => Promise<boolean>
   onBack: () => void
 }) => {
@@ -261,16 +260,15 @@ const CreateView = ({
 export const ProfileSelector = () => {
   const { profiles, loading, loginWithPin, loginDirect, createAndLogin, deleteProfile } = useProfileStore()
   const [mode, setMode] = useState<'select' | 'pin' | 'create'>('select')
-  const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null)
+  const [selectedProfile, setSelectedProfile] = useState<ApiProfile | null>(null)
   const [deleting, setDeleting] = useState<string | null>(null)
 
   useEffect(() => {
     if (!loading && profiles.length === 0) setMode('create')
   }, [loading, profiles])
 
-  const handleSelectProfile = async (profile: Profile) => {
-    const hasPin = await profileHasPin(profile.id)
-    if (hasPin) {
+  const handleSelectProfile = async (profile: ApiProfile) => {
+    if (profile.has_pin) {
       setSelectedProfile(profile)
       setMode('pin')
     } else {
@@ -325,7 +323,7 @@ export const ProfileSelector = () => {
                     <div className="text-left">
                       <p className="font-semibold text-sepia-900 dark:text-sepia-50">{profile.name}</p>
                       <p className="text-xs text-sepia-500">
-                        {profile.pinHash ? 'Con PIN' : 'Sin PIN'}
+                        {profile.has_pin ? 'Con PIN' : 'Sin PIN'}
                       </p>
                     </div>
                   </button>
