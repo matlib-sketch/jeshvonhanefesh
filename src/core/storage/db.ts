@@ -77,13 +77,14 @@ const DEFAULT_SETTINGS: SettingsRecord = {
   onboardingCompleted: false,
   disabledMiddot: [],
   middahTargets: {},
+  customMiddot: [],
 }
 
 export const getSettings = async (): Promise<SettingsRecord> => {
   const record = await db.settings.get(SETTINGS_ID)
   if (!record) return DEFAULT_SETTINGS
   // Merge defaults para usuarios que no tienen los campos nuevos
-  return Object.assign({ disabledMiddot: [], middahTargets: {} }, record)
+  return Object.assign({ disabledMiddot: [], middahTargets: {}, customMiddot: [] }, record)
 }
 
 

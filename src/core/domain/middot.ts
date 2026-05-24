@@ -1,4 +1,4 @@
-import type { Middah } from './types'
+import type { Middah, CustomMiddah } from './types'
 
 // Las 13 middot según R. Mendel de Satanov — orden exacto del sefer
 export const MIDDOT: Middah[] = [
@@ -121,5 +121,15 @@ export const MIDDOT: Middah[] = [
   },
 ]
 
-export const getMiddahById = (id: number): Middah | undefined =>
-  MIDDOT.find((m) => m.id === id)
+export const getMiddahById = (id: number, customMiddot: CustomMiddah[] = []): Middah | undefined =>
+  MIDDOT.find((m) => m.id === id) ?? customMiddot.find((m) => m.id === id)
+
+// Combina las 13 middot base con las personalizadas del usuario
+export const getAllMiddot = (customMiddot: CustomMiddah[] = []): Middah[] => [
+  ...MIDDOT,
+  ...customMiddot,
+]
+
+// Siguiente ID disponible para una middah personalizada (empieza en 100)
+export const nextCustomMiddahId = (customMiddot: CustomMiddah[] = []): number =>
+  customMiddot.length === 0 ? 100 : Math.max(...customMiddot.map((m) => m.id)) + 1

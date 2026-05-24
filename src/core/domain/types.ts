@@ -9,10 +9,14 @@ export interface Middah {
   dailyPrompt: string;
 }
 
+export interface CustomMiddah extends Middah {
+  custom: true;  // IDs >= 100
+}
+
 export type Score = -2 | -1 | 0 | 1 | 2;
 
 export interface DailyEntry {
-  date: string;           // ISO YYYY-MM-DD
+  date: string;
   scores: Record<number, Score>;
   journal: string;
   weekMiddahFocus: number;
@@ -38,6 +42,7 @@ export interface UserSettings {
   theme: 'light' | 'dark' | 'system';
   notificationsEnabled: boolean;
   onboardingCompleted: boolean;
-  disabledMiddot: number[];                // IDs de middot deshabilitadas
-  middahTargets: Record<number, number>;   // middahId → objetivo semanal
+  disabledMiddot: number[];
+  middahTargets: Record<number, number>;
+  customMiddot: CustomMiddah[];
 }

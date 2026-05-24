@@ -2,16 +2,17 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
-import { Save, CheckCircle } from 'lucide-react'
+import { Save, CheckCircle, Info } from 'lucide-react'
 import { HDate } from '@hebcal/core'
 import { Card } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
 import { ScoreButton } from '../components/ui/ScoreButton'
+import { MiddahInfoSheet } from '../components/ui/MiddahInfoSheet'
 import { useSettingsStore } from '../core/stores/settingsStore'
 import { useEntriesStore } from '../core/stores/entriesStore'
-import { MIDDOT } from '../core/domain/middot'
+import { getAllMiddot } from '../core/domain/middot'
 import { getCurrentCycleNumber, getCurrentCycleWeek, getCurrentMiddahFocus } from '../core/utils/cycle'
-import type { Score } from '../core/domain/types'
+import type { Middah, Score } from '../core/domain/types'
 
 const SCORES: Score[] = [-2, -1, 0, 1, 2]
 
@@ -20,6 +21,7 @@ export const Today = () => {
   const { settings } = useSettingsStore()
   const { todayEntry, loadToday, setScore, setJournal, saveToday } = useEntriesStore()
   const [saved, setSaved] = useState(false)
+  const [infoMiddah, setInfoMiddah] = useState<Middah | null>(null)
 
   const todayStr = format(new Date(), 'yyyy-MM-dd')
   const hebrewDate = new HDate(new Date()).toString()
@@ -29,12 +31,11 @@ export const Today = () => {
   const weekNum = getCurrentCycleWeek(cycleStart, todayStr)
   const focusMiddah = getCurrentMiddahFocus(cycleStart, todayStr)
   const disabledMiddot = settings?.disabledMiddot ?? []
-  const activeMiddot = MIDDOT.filter((m) => !disabledMiddot.includes(m.id))
+  const allMiddot = getAllMiddot(settings?.customMiddot)
+  const activeMiddot = allMiddot.filter((m) => !disabledMiddot.includes(m.id))
 
   useEffect(() => {
-    if (settings) {
-      loadToday(focusMiddah.id)
-    }
+    if (settings) loadToday(focusMiddah.id)
   }, [settings])
 
   const handleSave = async () => {
@@ -97,7 +98,7 @@ export const Today = () => {
         </div>
       </Card>
 
-      {/* Lista de las 13 middot */}
+      {/* Lista de middot activas */}
       <div>
         <h3 className="text-xs font-semibold text-sepia-500 uppercase tracking-wide mb-2 px-1">
           {t('today.allMiddot')}
@@ -110,14 +111,19 @@ export const Today = () => {
               <div
                 key={middah.id}
                 className={[
-                  'flex items-center gap-3 px-4 py-3',
+                  'flex items-center gap-2 px-3 py-3',
                   isFocus ? 'bg-blue-50 dark:bg-blue-900/20' : '',
                 ].join(' ')}
               >
-                <div className="flex-1 min-w-0">
+                {/* Área de texto — tap abre la definición */}
+                <button
+                  onClick={() => setInfoMiddah(middah)}
+                  className="flex-1 min-w-0 text-left group"
+                  aria-label={`Ver definición de ${middah.spanish}`}
+                >
                   <div className="flex items-baseline gap-1.5">
-                    <span className="font-serif text-sm text-sepia-400">{middah.id}.</span>
-                    <span className="font-serif text-base text-sepia-900 dark:text-sepia-100">
+                    <span className="font-serif text-sm text-sepia-400">{middah.id <= 13 ? middah.id : '+'}</span>
+                    <span className="font-serif text-base text-sepia-900 dark:text-sepia-100 group-hover:text-blue-deep transition-colors">
                       {middah.hebrew}
                     </span>
                     {isFocus && (
@@ -125,11 +131,14 @@ export const Today = () => {
                         foco
                       </span>
                     )}
+                    <Info size={12} className="text-sepia-300 group-hover:text-blue-deep transition-colors ml-0.5 shrink-0" />
                   </div>
                   <p className="text-xs text-sepia-500 dark:text-sepia-400">
                     {middah.transliteration} · {middah.spanish}
                   </p>
-                </div>
+                </button>
+
+                {/* Botones de puntuación */}
                 <div className="flex gap-1 shrink-0">
                   {SCORES.map((s) => (
                     <ScoreButton
@@ -161,25 +170,16 @@ export const Today = () => {
       </div>
 
       {/* Botón guardar */}
-      <Button
-        fullWidth
-        size="lg"
-        variant={saved ? 'secondary' : 'primary'}
-        onClick={handleSave}
-        disabled={saved}
-      >
+      <Button fullWidth size="lg" variant={saved ? 'secondary' : 'primary'} onClick={handleSave} disabled={saved}>
         {saved ? (
-          <>
-            <CheckCircle size={18} />
-            {t('today.saved')}
-          </>
+          <><CheckCircle size={18} /> {t('today.saved')}</>
         ) : (
-          <>
-            <Save size={18} />
-            {t('today.save')}
-          </>
+          <><Save size={18} /> {t('today.save')}</>
         )}
       </Button>
+
+      {/* Sheet de definición de middah */}
+      <MiddahInfoSheet middah={infoMiddah} onClose={() => setInfoMiddah(null)} />
     </div>
   )
 }
