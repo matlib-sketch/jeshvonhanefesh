@@ -1,4 +1,4 @@
-import { differenceInDays, startOfDay } from 'date-fns'
+import { differenceInDays, startOfDay, startOfWeek, endOfWeek, format } from 'date-fns'
 import { MIDDOT } from '../domain/middot'
 import type { Middah } from '../domain/types'
 
@@ -37,6 +37,13 @@ export const getCurrentMiddahFocus = (cycleStartDate: string, today: string): Mi
   const week = getCurrentCycleWeek(cycleStartDate, today)
   return MIDDOT[week - 1]
 }
+
+// Inicio y fin de la semana gregoriana actual (domingo → sábado)
+export const getCurrentWeekStart = (): string =>
+  format(startOfWeek(new Date(), { weekStartsOn: 0 }), 'yyyy-MM-dd')
+
+export const getCurrentWeekEnd = (): string =>
+  format(endOfWeek(new Date(), { weekStartsOn: 0 }), 'yyyy-MM-dd')
 
 // Fecha de inicio del ciclo actual
 export const getCurrentCycleStartDate = (cycleStartDate: string, today: string): Date => {

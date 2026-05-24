@@ -38,4 +38,6 @@ export interface UserSettings {
   theme: 'light' | 'dark' | 'system';
   notificationsEnabled: boolean;
   onboardingCompleted: boolean;
+  disabledMiddot: number[];                // IDs de middot deshabilitadas
+  middahTargets: Record<number, number>;   // middahId → objetivo semanal
 }

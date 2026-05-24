@@ -75,12 +75,17 @@ const DEFAULT_SETTINGS: SettingsRecord = {
   theme: 'system',
   notificationsEnabled: false,
   onboardingCompleted: false,
+  disabledMiddot: [],
+  middahTargets: {},
 }
 
 export const getSettings = async (): Promise<SettingsRecord> => {
   const record = await db.settings.get(SETTINGS_ID)
-  return record ?? DEFAULT_SETTINGS
+  if (!record) return DEFAULT_SETTINGS
+  // Merge defaults para usuarios que no tienen los campos nuevos
+  return Object.assign({ disabledMiddot: [], middahTargets: {} }, record)
 }
+
 
 export const saveSettings = async (settings: Partial<UserSettings>): Promise<void> => {
   const current = await getSettings()

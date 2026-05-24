@@ -28,6 +28,8 @@ export const Today = () => {
   const cycleNum = getCurrentCycleNumber(cycleStart, todayStr)
   const weekNum = getCurrentCycleWeek(cycleStart, todayStr)
   const focusMiddah = getCurrentMiddahFocus(cycleStart, todayStr)
+  const disabledMiddot = settings?.disabledMiddot ?? []
+  const activeMiddot = MIDDOT.filter((m) => !disabledMiddot.includes(m.id))
 
   useEffect(() => {
     if (settings) {
@@ -101,7 +103,7 @@ export const Today = () => {
           {t('today.allMiddot')}
         </h3>
         <Card className="divide-y divide-sepia-100 dark:divide-sepia-700 !p-0 overflow-hidden">
-          {MIDDOT.map((middah) => {
+          {activeMiddot.map((middah) => {
             const isFocus = middah.id === focusMiddah.id
             const currentScore = todayEntry.scores[middah.id]
             return (

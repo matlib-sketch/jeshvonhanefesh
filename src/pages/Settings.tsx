@@ -1,7 +1,8 @@
 import { useState, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import i18n from '../web/i18n'
-import { Download, Upload, RotateCcw, Bell, Globe, Palette, Calendar } from 'lucide-react'
+import { Download, Upload, RotateCcw, Bell, Globe, Palette, Calendar, ListChecks } from 'lucide-react'
+import { MIDDOT } from '../core/domain/middot'
 import { Card } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
 import { useSettingsStore } from '../core/stores/settingsStore'
@@ -79,6 +80,53 @@ export const Settings = () => {
       <h1 className="text-xl font-semibold text-sepia-900 dark:text-sepia-50 px-1">
         {t('settings.title')}
       </h1>
+
+      {/* Mis middot */}
+      <Card>
+        <SectionHeader icon={ListChecks} label="Mis middot" />
+        <p className="text-xs text-sepia-500 mb-3">
+          Desactivá las middot que no querés incluir en tu práctica.
+        </p>
+        <div className="space-y-1">
+          {MIDDOT.map((middah) => {
+            const disabled = (settings.disabledMiddot ?? []).includes(middah.id)
+            const toggle = async () => {
+              const current = settings.disabledMiddot ?? []
+              const next = disabled
+                ? current.filter((id) => id !== middah.id)
+                : [...current, middah.id]
+              await updateSettings({ disabledMiddot: next })
+            }
+            return (
+              <div key={middah.id} className="flex items-center gap-3 py-2 border-b border-sepia-100 dark:border-sepia-800 last:border-0">
+                <span className="font-serif text-base text-sepia-400 w-5 text-right">{middah.id}</span>
+                <div className="flex-1 min-w-0">
+                  <span className={['font-serif text-sm', disabled ? 'text-sepia-400 line-through' : 'text-sepia-900 dark:text-sepia-100'].join(' ')}>
+                    {middah.hebrew}
+                  </span>
+                  <span className="text-xs text-sepia-500 ml-1.5">
+                    {middah.transliteration} · {middah.spanish}
+                  </span>
+                </div>
+                <button
+                  onClick={toggle}
+                  className={[
+                    'relative h-6 w-11 rounded-full transition-colors duration-200 shrink-0',
+                    disabled ? 'bg-sepia-200 dark:bg-sepia-700' : 'bg-blue-deep',
+                  ].join(' ')}
+                  role="switch"
+                  aria-checked={!disabled}
+                >
+                  <span className={[
+                    'absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform duration-200',
+                    disabled ? 'left-0.5' : 'left-5',
+                  ].join(' ')} />
+                </button>
+              </div>
+            )
+          })}
+        </div>
+      </Card>
 
       {/* Recordatorio */}
       <Card>
