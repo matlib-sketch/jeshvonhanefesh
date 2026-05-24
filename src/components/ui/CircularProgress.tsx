@@ -3,16 +3,15 @@ import type { Middah } from '../../core/domain/types'
 interface CircularProgressProps {
   middah: Middah
   value: number      // puntaje acumulado esta semana (puede ser negativo)
-  target: number     // objetivo semanal (positivo)
+  target: number     // objetivo semanal (0 = sin objetivo)
   size?: number
   onEdit?: () => void
 }
 
 const getPositiveColor = (pct: number, exceeded: boolean): string => {
-  if (exceeded) return '#16a34a'      // verde — completado
-  if (pct >= 0.66) return '#1e3a5f'  // azul profundo
-  if (pct >= 0.33) return '#0d9488'  // teal
-  return '#1e3a5f'                    // azul (arranque)
+  if (exceeded) return '#16a34a'
+  if (pct >= 0.66) return '#1e3a5f'
+  return '#0d9488'
 }
 
 export const CircularProgress = ({ middah, value, target, size = 84, onEdit }: CircularProgressProps) => {
@@ -21,17 +20,16 @@ export const CircularProgress = ({ middah, value, target, size = 84, onEdit }: C
   const circumference = 2 * Math.PI * radius
   const center = size / 2
 
+  const hasTarget = target > 0
   const isNegative = value < 0
-  const exceeded = value >= target && target > 0
+  const exceeded = hasTarget && value >= target
 
-  // Porcentaje de llenado: positivo = clockwise, negativo = counterclockwise
-  const pct = target > 0 ? Math.min(Math.abs(value) / target, 1) : 0
+  const pct = hasTarget ? Math.min(Math.abs(value) / target, 1) : 0
   const filled = pct * circumference
 
   const strokeColor = isNegative ? '#dc2626' : getPositiveColor(pct, exceeded)
   const displayValue = value > 0 ? `+${value}` : String(value)
 
-  // Para ir hacia la izquierda (counterclockwise): espejamos horizontalmente el círculo
   const positiveTransform = `rotate(-90 ${center} ${center})`
   const negativeTransform  = `rotate(-90 ${center} ${center}) scale(-1 1) translate(-${size} 0)`
 
@@ -39,17 +37,18 @@ export const CircularProgress = ({ middah, value, target, size = 84, onEdit }: C
     <button
       onClick={onEdit}
       className="flex flex-col items-center gap-1.5 group"
-      aria-label={`${middah.spanish}: ${displayValue} de ${target}`}
+      aria-label={`${middah.spanish}: ${displayValue}${hasTarget ? ` de ${target}` : ''}`}
     >
       <div className="relative">
         <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-          {/* Pista (track) */}
+          {/* Pista */}
           <circle
             cx={center} cy={center} r={radius}
             fill="none"
             stroke="currentColor"
             strokeWidth={strokeWidth}
-            className="text-sepia-200 dark:text-sepia-700"
+            strokeDasharray={hasTarget ? undefined : '4 4'}
+            className={hasTarget ? 'text-sepia-200 dark:text-sepia-700' : 'text-sepia-200 dark:text-sepia-700'}
           />
 
           {/* Arco de progreso */}
@@ -68,24 +67,26 @@ export const CircularProgress = ({ middah, value, target, size = 84, onEdit }: C
 
           {/* Valor actual */}
           <text
-            x={center} y={center - 3}
+            x={center} y={center - (hasTarget ? 3 : 2)}
             textAnchor="middle"
-            fontSize="13"
+            fontSize={hasTarget ? '13' : '12'}
             fontWeight="700"
-            fill={isNegative ? '#dc2626' : value === 0 ? '#8b7355' : strokeColor}
+            fill={isNegative ? '#dc2626' : value === 0 ? '#b89f7c' : strokeColor}
           >
             {displayValue}
           </text>
 
-          {/* Objetivo */}
-          <text
-            x={center} y={center + 11}
-            textAnchor="middle"
-            fontSize="9"
-            fill="#8b7355"
-          >
-            /{target}
-          </text>
+          {/* Objetivo o indicador de "sin meta" */}
+          {hasTarget ? (
+            <text x={center} y={center + 11} textAnchor="middle" fontSize="9" fill="#8b7355">
+              /{target}
+            </text>
+          ) : (
+            <text x={center} y={center + 12} textAnchor="middle" fontSize="11" fill="#b89f7c"
+              className="group-hover:fill-[#1e3a5f] transition-colors">
+              +meta
+            </text>
+          )}
         </svg>
 
         {exceeded && (

@@ -2,47 +2,40 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns'
 import { es } from 'date-fns/locale'
-import { Plus, Check, Trash2, X, Pencil } from 'lucide-react'
+import { Plus, Check, Trash2, X } from 'lucide-react'
 import { Card } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
 import { CircularProgress } from '../components/ui/CircularProgress'
 import { useGoalsStore } from '../core/stores/goalsStore'
 import { useSettingsStore } from '../core/stores/settingsStore'
 import { useEntriesStore } from '../core/stores/entriesStore'
-import { MIDDOT } from '../core/domain/middot'
+import { getAllMiddot } from '../core/domain/middot'
 import { getCurrentWeekStart, getCurrentWeekEnd } from '../core/utils/cycle'
-import type { Goal } from '../core/domain/types'
+import type { Goal, Middah } from '../core/domain/types'
 
 const today = new Date()
 
-// Suma de scores de una middah en las entradas dadas
 const weeklyScore = (entries: ReturnType<typeof useEntriesStore.getState>['entries'], middahId: number): number =>
   entries.reduce((sum, e) => sum + (e.scores[middahId] ?? 0), 0)
 
-// --- Modal para editar objetivo de una middah ---
+// --- Modal para editar el objetivo de una middah ---
 interface MiddahTargetModalProps {
-  middahId: number | null       // null = agregar nueva
+  middah: Middah
   currentTarget: number
-  usedIds: number[]             // IDs que ya tienen objetivo
-  disabledIds: number[]
-  onSave: (middahId: number, target: number) => void
-  onDelete?: () => void
+  onSave: (target: number) => void
   onClose: () => void
 }
 
-const MiddahTargetModal = ({
-  middahId, currentTarget, usedIds, disabledIds, onSave, onDelete, onClose,
-}: MiddahTargetModalProps) => {
-  const [selectedId, setSelectedId] = useState<number>(middahId ?? 0)
-  const [target, setTarget] = useState(currentTarget || 6)
-
-  const availableMiddot = MIDDOT.filter(
-    (m) => !disabledIds.includes(m.id) && (middahId ? m.id === middahId : !usedIds.includes(m.id)),
-  )
+const MiddahTargetModal = ({ middah, currentTarget, onSave, onClose }: MiddahTargetModalProps) => {
+  const [target, setTarget] = useState(currentTarget > 0 ? currentTarget : 6)
 
   const handleSave = () => {
-    if (!selectedId || target <= 0) return
-    onSave(selectedId, target)
+    onSave(target)
+    onClose()
+  }
+
+  const handleClear = () => {
+    onSave(0)
     onClose()
   }
 
@@ -53,40 +46,19 @@ const MiddahTargetModal = ({
         style={{ maxHeight: '90dvh' }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Encabezado — fijo */}
+        {/* Encabezado */}
         <div className="flex items-center justify-between px-5 pt-5 pb-3 shrink-0">
-          <h3 className="font-semibold text-sepia-900 dark:text-sepia-50">
-            {middahId ? 'Editar objetivo' : 'Nuevo objetivo de middah'}
-          </h3>
+          <div>
+            <p className="font-serif text-lg text-sepia-900 dark:text-sepia-50">{middah.hebrew}</p>
+            <p className="text-xs text-sepia-500">{middah.transliteration} · {middah.spanish}</p>
+          </div>
           <button onClick={onClose} className="p-1 rounded-lg hover:bg-sepia-100">
             <X size={20} className="text-sepia-500" />
           </button>
         </div>
 
-        {/* Contenido — scrollable */}
+        {/* Contenido */}
         <div className="flex-1 overflow-y-auto px-5 space-y-4 pb-2">
-          {/* Selección de middah */}
-          {!middahId && (
-            <div>
-              <label className="text-xs font-semibold text-sepia-500 uppercase tracking-wide block mb-1.5">
-                Middah
-              </label>
-              <select
-                value={selectedId}
-                onChange={(e) => setSelectedId(Number(e.target.value))}
-                className="w-full rounded-lg border border-sepia-200 dark:border-sepia-700 bg-sepia-50 dark:bg-sepia-800 px-3 py-2.5 text-sm text-sepia-900 dark:text-sepia-100 focus:outline-none focus:ring-2 focus:ring-blue-deep"
-              >
-                <option value={0}>Seleccioná una middah</option>
-                {availableMiddot.map((m) => (
-                  <option key={m.id} value={m.id}>
-                    {m.hebrew} · {m.transliteration} · {m.spanish}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
-
-          {/* Target numérico */}
           <div>
             <label className="text-xs font-semibold text-sepia-500 uppercase tracking-wide block mb-1.5">
               Objetivo semanal (puntos a acumular)
@@ -109,22 +81,23 @@ const MiddahTargetModal = ({
               </button>
             </div>
             <p className="text-xs text-sepia-400 text-center mt-2">
-              Acumulá +{target} puntos esta semana en esa middah
+              Acumulá +{target} puntos esta semana en {middah.spanish.toLowerCase()}
             </p>
           </div>
         </div>
 
-        {/* Botones — siempre visibles al fondo */}
+        {/* Botones */}
         <div className="px-5 py-4 border-t border-sepia-100 dark:border-sepia-700 shrink-0 flex gap-2">
-          {onDelete && (
+          {currentTarget > 0 && (
             <button
-              onClick={() => { onDelete(); onClose() }}
-              className="p-3 rounded-xl border border-red-200 text-red-500 hover:bg-red-50 transition-colors"
+              onClick={handleClear}
+              className="p-3 rounded-xl border border-sepia-200 text-sepia-400 hover:text-red-500 hover:border-red-200 transition-colors"
+              title="Quitar objetivo"
             >
               <Trash2 size={16} />
             </button>
           )}
-          <Button fullWidth onClick={handleSave} disabled={!selectedId || target <= 0}>
+          <Button fullWidth onClick={handleSave}>
             <Check size={16} /> Guardar
           </Button>
         </div>
@@ -136,49 +109,42 @@ const MiddahTargetModal = ({
 // --- Item de objetivo de texto ---
 interface GoalItemProps {
   goal: Goal
+  middah?: Middah
   onToggle: () => void
   onDelete: () => void
 }
 
-const GoalItem = ({ goal, onToggle, onDelete }: GoalItemProps) => {
-  const middah = MIDDOT.find((m) => m.id === goal.middahId)
-  return (
-    <div className="flex items-start gap-3 py-3">
-      <button
-        onClick={onToggle}
-        className={[
-          'mt-0.5 h-5 w-5 rounded border-2 flex items-center justify-center shrink-0 transition-colors',
-          goal.completed
-            ? 'bg-teal-600 border-teal-600'
-            : 'border-sepia-300 dark:border-sepia-600 hover:border-blue-deep',
-        ].join(' ')}
-      >
-        {goal.completed && <Check size={12} className="text-white" strokeWidth={3} />}
-      </button>
-      <div className="flex-1 min-w-0">
-        <p className={['text-sm leading-snug', goal.completed ? 'line-through text-sepia-400' : 'text-sepia-900 dark:text-sepia-100'].join(' ')}>
-          {goal.text}
+const GoalItem = ({ goal, middah, onToggle, onDelete }: GoalItemProps) => (
+  <div className="flex items-start gap-3 py-3">
+    <button
+      onClick={onToggle}
+      className={[
+        'mt-0.5 h-5 w-5 rounded border-2 flex items-center justify-center shrink-0 transition-colors',
+        goal.completed
+          ? 'bg-teal-600 border-teal-600'
+          : 'border-sepia-300 dark:border-sepia-600 hover:border-blue-deep',
+      ].join(' ')}
+    >
+      {goal.completed && <Check size={12} className="text-white" strokeWidth={3} />}
+    </button>
+    <div className="flex-1 min-w-0">
+      <p className={['text-sm leading-snug', goal.completed ? 'line-through text-sepia-400' : 'text-sepia-900 dark:text-sepia-100'].join(' ')}>
+        {goal.text}
+      </p>
+      {middah && (
+        <p className="text-xs text-sepia-500 mt-0.5">
+          <span className="font-serif">{middah.hebrew}</span> · {middah.spanish}
         </p>
-        {middah && (
-          <p className="text-xs text-sepia-500 mt-0.5">
-            <span className="font-serif">{middah.hebrew}</span> · {middah.spanish}
-          </p>
-        )}
-      </div>
-      <button onClick={onDelete} className="p-1 text-sepia-400 hover:text-red-500 transition-colors">
-        <Trash2 size={14} />
-      </button>
+      )}
     </div>
-  )
-}
+    <button onClick={onDelete} className="p-1 text-sepia-400 hover:text-red-500 transition-colors">
+      <Trash2 size={14} />
+    </button>
+  </div>
+)
 
 // --- Formulario para objetivo de texto ---
-interface AddTextGoalFormProps {
-  type: 'weekly' | 'monthly'
-  onClose: () => void
-}
-
-const AddTextGoalForm = ({ type, onClose }: AddTextGoalFormProps) => {
+const AddTextGoalForm = ({ type, onClose }: { type: 'weekly' | 'monthly'; onClose: () => void }) => {
   const { addGoal } = useGoalsStore()
   const [text, setText] = useState('')
 
@@ -208,12 +174,8 @@ const AddTextGoalForm = ({ type, onClose }: AddTextGoalFormProps) => {
         className="w-full rounded-lg border border-sepia-200 dark:border-sepia-700 bg-sepia-50 dark:bg-sepia-800 px-3 py-2 text-sm text-sepia-900 dark:text-sepia-100 focus:outline-none focus:ring-2 focus:ring-blue-deep resize-none"
       />
       <div className="flex gap-2">
-        <Button variant="secondary" size="sm" onClick={onClose}>
-          <X size={14} /> Cancelar
-        </Button>
-        <Button size="sm" onClick={handleSave} disabled={!text.trim()}>
-          <Check size={14} /> Guardar
-        </Button>
+        <Button variant="secondary" size="sm" onClick={onClose}><X size={14} /> Cancelar</Button>
+        <Button size="sm" onClick={handleSave} disabled={!text.trim()}><Check size={14} /> Guardar</Button>
       </div>
     </div>
   )
@@ -226,32 +188,26 @@ export const Goals = () => {
   const { settings, updateSettings } = useSettingsStore()
   const { entries, loadRange } = useEntriesStore()
 
-  const [editingMiddahId, setEditingMiddahId] = useState<number | null | 'new'>(null)
+  const [editingMiddah, setEditingMiddah] = useState<Middah | null>(null)
   const [addingTextType, setAddingTextType] = useState<'weekly' | 'monthly' | null>(null)
 
   useEffect(() => { loadGoals() }, [])
-  useEffect(() => {
-    loadRange(getCurrentWeekStart(), getCurrentWeekEnd())
-  }, [])
+  useEffect(() => { loadRange(getCurrentWeekStart(), getCurrentWeekEnd()) }, [])
 
   if (!settings) return null
 
-  const { disabledMiddot = [], middahTargets = {} } = settings
-  const activeTargets = Object.entries(middahTargets).filter(([, v]) => v > 0)
+  const { disabledMiddot = [], middahTargets = {}, customMiddot = [] } = settings
+  const allMiddot = getAllMiddot(customMiddot).filter((m) => !disabledMiddot.includes(m.id))
 
   const handleSaveTarget = async (middahId: number, target: number) => {
-    await updateSettings({ middahTargets: { ...middahTargets, [middahId]: target } })
-  }
-
-  const handleDeleteTarget = async (middahId: number) => {
     const next = { ...middahTargets }
-    delete next[middahId]
+    if (target === 0) delete next[middahId]
+    else next[middahId] = target
     await updateSettings({ middahTargets: next })
   }
 
   const weeklyTextGoals = goals.filter((g) => g.type === 'weekly')
   const monthlyTextGoals = goals.filter((g) => g.type === 'monthly')
-  const usedMiddahIds = Object.keys(middahTargets).map(Number)
 
   return (
     <div className="space-y-5 pb-6">
@@ -259,62 +215,45 @@ export const Goals = () => {
         {t('goals.title')}
       </h1>
 
-      {/* ── Círculos de objetivos por middah ── */}
+      {/* ── Círculos — todas las middot ── */}
       <Card elevated>
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h2 className="text-sm font-semibold text-sepia-700 dark:text-sepia-300">
-              Middot esta semana
-            </h2>
-            <p className="text-xs text-sepia-400 mt-0.5">
-              {format(new Date(getCurrentWeekStart() + 'T12:00:00'), "d MMM", { locale: es })}
-              {' – '}
-              {format(new Date(getCurrentWeekEnd() + 'T12:00:00'), "d MMM", { locale: es })}
-            </p>
-          </div>
-          <button
-            onClick={() => setEditingMiddahId('new')}
-            disabled={activeTargets.length >= MIDDOT.filter(m => !disabledMiddot.includes(m.id)).length}
-            className="flex items-center gap-1 text-xs font-medium text-blue-deep dark:text-blue-400 hover:underline disabled:opacity-40"
-          >
-            <Plus size={14} /> Agregar
-          </button>
+        {/* Encabezado con fechas */}
+        <div className="flex items-center justify-between mb-1">
+          <h2 className="text-sm font-semibold text-sepia-700 dark:text-sepia-300">
+            Objetivo semanal
+          </h2>
+          <p className="text-xs text-sepia-400">
+            {format(new Date(getCurrentWeekStart() + 'T12:00:00'), "d MMM", { locale: es })}
+            {' – '}
+            {format(new Date(getCurrentWeekEnd() + 'T12:00:00'), "d MMM", { locale: es })}
+          </p>
         </div>
 
-        {activeTargets.length === 0 ? (
-          <div className="text-center py-6 space-y-3">
-            <p className="text-sm text-sepia-400">Sin objetivos de middot activos</p>
-            <Button size="sm" variant="secondary" onClick={() => setEditingMiddahId('new')}>
-              <Plus size={14} /> Agregar objetivo
-            </Button>
-          </div>
-        ) : (
-          <div className="grid grid-cols-3 gap-4 justify-items-center">
-            {activeTargets.map(([idStr, target]) => {
-              const id = Number(idStr)
-              const middah = MIDDOT.find((m) => m.id === id)
-              if (!middah) return null
-              const value = weeklyScore(entries, id)
-              return (
-                <div key={id} className="relative">
-                  <CircularProgress
-                    middah={middah}
-                    value={value}
-                    target={target}
-                    onEdit={() => setEditingMiddahId(id)}
-                  />
-                  <button
-                    onClick={() => setEditingMiddahId(id)}
-                    className="absolute -top-1 -right-1 p-1 rounded-full bg-sepia-100 dark:bg-sepia-800 opacity-0 group-hover:opacity-100 hover:opacity-100 transition-opacity"
-                    aria-label="Editar objetivo"
-                  >
-                    <Pencil size={10} className="text-sepia-500" />
-                  </button>
-                </div>
-              )
-            })}
-          </div>
-        )}
+        {/* Leyenda */}
+        <div className="flex items-start gap-2 bg-sepia-50 dark:bg-sepia-800 rounded-xl px-3 py-2.5 mb-4">
+          <div className="mt-0.5 w-3 h-3 rounded-full border-2 border-blue-deep shrink-0" />
+          <p className="text-xs text-sepia-600 dark:text-sepia-400 leading-snug">
+            Cada círculo muestra los puntos acumulados esta semana en esa middah.
+            Tocá cualquiera para fijar cuántos puntos querés lograr.
+          </p>
+        </div>
+
+        {/* Grilla de círculos — siempre visible para todas las middot activas */}
+        <div className="grid grid-cols-3 gap-x-3 gap-y-5 justify-items-center">
+          {allMiddot.map((middah) => {
+            const target = middahTargets[middah.id] ?? 0
+            const value = weeklyScore(entries, middah.id)
+            return (
+              <CircularProgress
+                key={middah.id}
+                middah={middah}
+                value={value}
+                target={target}
+                onEdit={() => setEditingMiddah(middah)}
+              />
+            )
+          })}
+        </div>
       </Card>
 
       {/* ── Objetivos de texto (semanales) ── */}
@@ -338,7 +277,12 @@ export const Goals = () => {
         ) : (
           <div className="divide-y divide-sepia-100 dark:divide-sepia-700">
             {weeklyTextGoals.map((g) => (
-              <GoalItem key={g.id} goal={g} onToggle={() => toggleGoal(g.id)} onDelete={() => removeGoal(g.id)} />
+              <GoalItem
+                key={g.id} goal={g}
+                middah={allMiddot.find((m) => m.id === g.middahId)}
+                onToggle={() => toggleGoal(g.id)}
+                onDelete={() => removeGoal(g.id)}
+              />
             ))}
           </div>
         )}
@@ -365,22 +309,24 @@ export const Goals = () => {
         ) : (
           <div className="divide-y divide-sepia-100 dark:divide-sepia-700">
             {monthlyTextGoals.map((g) => (
-              <GoalItem key={g.id} goal={g} onToggle={() => toggleGoal(g.id)} onDelete={() => removeGoal(g.id)} />
+              <GoalItem
+                key={g.id} goal={g}
+                middah={allMiddot.find((m) => m.id === g.middahId)}
+                onToggle={() => toggleGoal(g.id)}
+                onDelete={() => removeGoal(g.id)}
+              />
             ))}
           </div>
         )}
       </Card>
 
-      {/* Modal de edición de target */}
-      {editingMiddahId !== null && (
+      {/* Modal edición de objetivo */}
+      {editingMiddah && (
         <MiddahTargetModal
-          middahId={editingMiddahId === 'new' ? null : editingMiddahId}
-          currentTarget={editingMiddahId !== 'new' ? (middahTargets[editingMiddahId] ?? 0) : 6}
-          usedIds={usedMiddahIds}
-          disabledIds={disabledMiddot}
-          onSave={handleSaveTarget}
-          onDelete={editingMiddahId !== 'new' ? () => handleDeleteTarget(editingMiddahId as number) : undefined}
-          onClose={() => setEditingMiddahId(null)}
+          middah={editingMiddah}
+          currentTarget={middahTargets[editingMiddah.id] ?? 0}
+          onSave={(target) => handleSaveTarget(editingMiddah.id, target)}
+          onClose={() => setEditingMiddah(null)}
         />
       )}
     </div>
