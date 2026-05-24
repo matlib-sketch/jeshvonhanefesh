@@ -7,12 +7,14 @@ import { HDate } from '@hebcal/core'
 import { Card } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
 import { ScoreButton } from '../components/ui/ScoreButton'
+import { CircularProgress } from '../components/ui/CircularProgress'
 import { MiddahInfoSheet } from '../components/ui/MiddahInfoSheet'
 import { useSettingsStore } from '../core/stores/settingsStore'
 import { useEntriesStore } from '../core/stores/entriesStore'
+import { getEntriesRange } from '../core/api/data'
 import { getAllMiddot } from '../core/domain/middot'
-import { getCurrentCycleNumber, getCurrentCycleWeek, getCurrentMiddahFocus } from '../core/utils/cycle'
-import type { Middah, Score } from '../core/domain/types'
+import { getCurrentCycleNumber, getCurrentCycleWeek, getCurrentMiddahFocus, getCurrentWeekStart, getCurrentWeekEnd } from '../core/utils/cycle'
+import type { DailyEntry, Middah, Score } from '../core/domain/types'
 
 const SCORES: Score[] = [-2, -1, 0, 1, 2]
 
@@ -22,6 +24,7 @@ export const Today = () => {
   const { todayEntry, loadToday, setScore, setJournal, saveToday } = useEntriesStore()
   const [saved, setSaved] = useState(false)
   const [infoMiddah, setInfoMiddah] = useState<Middah | null>(null)
+  const [weekEntries, setWeekEntries] = useState<DailyEntry[]>([])
 
   const todayStr = format(new Date(), 'yyyy-MM-dd')
   const hebrewDate = new HDate(new Date()).toString()
@@ -33,16 +36,27 @@ export const Today = () => {
   const disabledMiddot = settings?.disabledMiddot ?? []
   const allMiddot = getAllMiddot(settings?.customMiddot)
   const activeMiddot = allMiddot.filter((m) => !disabledMiddot.includes(m.id))
+  const middahTargets = settings?.middahTargets ?? {}
 
   useEffect(() => {
     if (settings) loadToday(focusMiddah.id)
   }, [settings])
+
+  // Cargar entradas de la semana para los círculos
+  useEffect(() => {
+    getEntriesRange(getCurrentWeekStart(), getCurrentWeekEnd())
+      .then(setWeekEntries)
+      .catch(() => {})
+  }, [])
 
   const handleSave = async () => {
     await saveToday()
     setSaved(true)
     setTimeout(() => setSaved(false), 3000)
   }
+
+  const weeklyScore = (middahId: number) =>
+    weekEntries.reduce((sum, e) => sum + (e.scores[middahId] ?? 0), 0)
 
   if (!settings || !todayEntry) {
     return (
@@ -68,6 +82,39 @@ export const Today = () => {
           <p className="font-serif text-blue-200 text-sm">{hebrewDate}</p>
         </div>
       </div>
+
+      {/* ── Desafío semanal — tira de círculos ── */}
+      <Card elevated className="!pb-3">
+        <div className="flex items-baseline justify-between mb-3">
+          <h2 className="text-xs font-semibold text-sepia-500 uppercase tracking-wide">
+            Desafío de la semana
+          </h2>
+          <p className="text-xs text-sepia-400">
+            {format(new Date(getCurrentWeekStart() + 'T12:00:00'), "d", { locale: es })}
+            {' – '}
+            {format(new Date(getCurrentWeekEnd() + 'T12:00:00'), "d MMM", { locale: es })}
+          </p>
+        </div>
+
+        {/* Círculos horizontales scrollables */}
+        <div className="overflow-x-auto -mx-4">
+          <div className="flex gap-3 px-4 pb-1" style={{ width: 'max-content' }}>
+            {activeMiddot.map((middah) => (
+              <CircularProgress
+                key={middah.id}
+                middah={middah}
+                value={weeklyScore(middah.id)}
+                target={middahTargets[middah.id] ?? 0}
+                size={72}
+              />
+            ))}
+          </div>
+        </div>
+
+        <p className="text-[10px] text-sepia-400 mt-2 px-0.5">
+          Tocá un círculo en Objetivos para ajustar la meta
+        </p>
+      </Card>
 
       {/* Middah de la semana */}
       <Card elevated className="space-y-3">
@@ -115,7 +162,6 @@ export const Today = () => {
                   isFocus ? 'bg-blue-50 dark:bg-blue-900/20' : '',
                 ].join(' ')}
               >
-                {/* Área de texto — tap abre la definición */}
                 <button
                   onClick={() => setInfoMiddah(middah)}
                   className="flex-1 min-w-0 text-left group"
@@ -138,7 +184,6 @@ export const Today = () => {
                   </p>
                 </button>
 
-                {/* Botones de puntuación */}
                 <div className="flex gap-1 shrink-0">
                   {SCORES.map((s) => (
                     <ScoreButton
@@ -178,7 +223,6 @@ export const Today = () => {
         )}
       </Button>
 
-      {/* Sheet de definición de middah */}
       <MiddahInfoSheet middah={infoMiddah} onClose={() => setInfoMiddah(null)} />
     </div>
   )
