@@ -1,11 +1,12 @@
 import { useState, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import i18n from '../web/i18n'
-import { Download, Upload, RotateCcw, Bell, Globe, Palette, Calendar, ListChecks, Plus, X, Trash2 } from 'lucide-react'
+import { Download, Upload, RotateCcw, Bell, Globe, Palette, Calendar, ListChecks, Plus, X, Trash2, LogOut } from 'lucide-react'
 import { MIDDOT, nextCustomMiddahId } from '../core/domain/middot'
 import { Card } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
 import { useSettingsStore } from '../core/stores/settingsStore'
+import { useProfileStore } from '../core/stores/profileStore'
 import { exportAllData, importAllData, resetAllData } from '../core/storage/db'
 import type { UserSettings, CustomMiddah } from '../core/domain/types'
 
@@ -111,6 +112,7 @@ const CustomMiddahForm = ({ onSave, onClose }: CustomMiddahFormProps) => {
 export const Settings = () => {
   const { t } = useTranslation()
   const { settings, updateSettings } = useSettingsStore()
+  const { currentProfile, logout } = useProfileStore()
   const [resetConfirm, setResetConfirm] = useState('')
   const [showResetDialog, setShowResetDialog] = useState(false)
   const [showCustomForm, setShowCustomForm] = useState(false)
@@ -352,6 +354,30 @@ export const Settings = () => {
           </div>
         </div>
       </Card>
+
+      {/* ── Cuenta ── */}
+      {currentProfile && (
+        <Card>
+          <div className="flex items-center gap-3">
+            <div
+              className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold shrink-0"
+              style={{ backgroundColor: currentProfile.color }}
+            >
+              {currentProfile.name.charAt(0).toUpperCase()}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-sepia-900 dark:text-sepia-50">{currentProfile.name}</p>
+              <p className="text-xs text-sepia-500">{currentProfile.pinHash ? 'Con PIN' : 'Sin PIN'}</p>
+            </div>
+            <button
+              onClick={logout}
+              className="flex items-center gap-1.5 text-sm text-sepia-600 hover:text-blue-deep transition-colors px-3 py-2 rounded-lg hover:bg-sepia-100"
+            >
+              <LogOut size={15} /> Cambiar de cuenta
+            </button>
+          </div>
+        </Card>
+      )}
 
       {/* ── Reset ── */}
       <Card className="border-red-200 dark:border-red-900">

@@ -7,7 +7,9 @@ import { History } from './pages/History'
 import { Progress } from './pages/Progress'
 import { Goals } from './pages/Goals'
 import { Settings } from './pages/Settings'
+import { ProfileSelector } from './pages/ProfileSelector'
 import { useSettingsStore } from './core/stores/settingsStore'
+import { useProfileStore } from './core/stores/profileStore'
 import i18n from './web/i18n'
 
 const AppShell = () => {
@@ -19,9 +21,7 @@ const AppShell = () => {
     </div>
   )
 
-  if (!settings.onboardingCompleted) {
-    return <Onboarding />
-  }
+  if (!settings.onboardingCompleted) return <Onboarding />
 
   return (
     <div className="min-h-screen bg-sepia-50 dark:bg-sepia-950">
@@ -42,29 +42,38 @@ const AppShell = () => {
 
 function App() {
   const { loadSettings, settings } = useSettingsStore()
+  const { loadProfiles, currentProfile, loading: profileLoading } = useProfileStore()
 
   useEffect(() => {
-    loadSettings()
+    loadProfiles()
   }, [])
 
   useEffect(() => {
+    if (currentProfile) loadSettings()
+  }, [currentProfile])
+
+  useEffect(() => {
     if (!settings) return
-
     i18n.changeLanguage(settings.language)
-
     const root = document.documentElement
-    if (settings.theme === 'dark') {
-      root.classList.add('dark')
-    } else if (settings.theme === 'light') {
-      root.classList.remove('dark')
-    } else {
+    if (settings.theme === 'dark') root.classList.add('dark')
+    else if (settings.theme === 'light') root.classList.remove('dark')
+    else {
       if (window.matchMedia('(prefers-color-scheme: dark)').matches) root.classList.add('dark')
       else root.classList.remove('dark')
     }
-
-    // Soporte RTL para hebreo
     document.documentElement.dir = settings.language === 'he' ? 'rtl' : 'ltr'
   }, [settings])
+
+  // Mientras verificamos el perfil
+  if (profileLoading) return (
+    <div className="flex items-center justify-center min-h-screen bg-sepia-50 dark:bg-sepia-950 text-sepia-500">
+      Cargando...
+    </div>
+  )
+
+  // Sin sesión activa → selector de perfiles
+  if (!currentProfile) return <ProfileSelector />
 
   return (
     <BrowserRouter>

@@ -1,7 +1,13 @@
 import Dexie, { type EntityTable } from 'dexie'
 import type { DailyEntry, Goal, UserSettings } from '../domain/types'
+import { getSession } from './profiles'
 
-// Tabla de configuración con un solo registro (id siempre = 1)
+// Nombre de DB aislado por perfil — lee el perfil activo del localStorage
+const dbName = (() => {
+  const profileId = getSession()
+  return profileId ? `CheshbonHaNefesh_${profileId}` : 'CheshbonHaNefesh_temp'
+})()
+
 interface SettingsRecord extends UserSettings {
   id: 1;
 }
@@ -12,7 +18,7 @@ class CheshbonDB extends Dexie {
   settings!: EntityTable<SettingsRecord, 'id'>
 
   constructor() {
-    super('CheshbonHaNefesh')
+    super(dbName)
     this.version(1).stores({
       entries: 'date, createdAt, weekMiddahFocus',
       goals: 'id, type, periodStart, periodEnd, completed',
