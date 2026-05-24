@@ -47,12 +47,14 @@ const MiddahTargetModal = ({
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/50 flex items-end justify-center p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-50 bg-black/50 flex items-end justify-center" onClick={onClose}>
       <div
-        className="w-full max-w-lg bg-white dark:bg-sepia-900 rounded-t-2xl p-5 space-y-4"
+        className="w-full max-w-lg bg-white dark:bg-sepia-900 rounded-t-2xl flex flex-col"
+        style={{ maxHeight: '90dvh' }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between">
+        {/* Encabezado — fijo */}
+        <div className="flex items-center justify-between px-5 pt-5 pb-3 shrink-0">
           <h3 className="font-semibold text-sepia-900 dark:text-sepia-50">
             {middahId ? 'Editar objetivo' : 'Nuevo objetivo de middah'}
           </h3>
@@ -61,59 +63,63 @@ const MiddahTargetModal = ({
           </button>
         </div>
 
-        {/* Selección de middah */}
-        {!middahId && (
+        {/* Contenido — scrollable */}
+        <div className="flex-1 overflow-y-auto px-5 space-y-4 pb-2">
+          {/* Selección de middah */}
+          {!middahId && (
+            <div>
+              <label className="text-xs font-semibold text-sepia-500 uppercase tracking-wide block mb-1.5">
+                Middah
+              </label>
+              <select
+                value={selectedId}
+                onChange={(e) => setSelectedId(Number(e.target.value))}
+                className="w-full rounded-lg border border-sepia-200 dark:border-sepia-700 bg-sepia-50 dark:bg-sepia-800 px-3 py-2.5 text-sm text-sepia-900 dark:text-sepia-100 focus:outline-none focus:ring-2 focus:ring-blue-deep"
+              >
+                <option value={0}>Seleccioná una middah</option>
+                {availableMiddot.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.hebrew} · {m.transliteration} · {m.spanish}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {/* Target numérico */}
           <div>
             <label className="text-xs font-semibold text-sepia-500 uppercase tracking-wide block mb-1.5">
-              Middah
+              Objetivo semanal (puntos a acumular)
             </label>
-            <select
-              value={selectedId}
-              onChange={(e) => setSelectedId(Number(e.target.value))}
-              className="w-full rounded-lg border border-sepia-200 dark:border-sepia-700 bg-sepia-50 dark:bg-sepia-800 px-3 py-2.5 text-sm text-sepia-900 dark:text-sepia-100 focus:outline-none focus:ring-2 focus:ring-blue-deep"
-            >
-              <option value={0}>Seleccioná una middah</option>
-              {availableMiddot.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.hebrew} · {m.transliteration} · {m.spanish}
-                </option>
-              ))}
-            </select>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setTarget((t) => Math.max(1, t - 1))}
+                className="h-12 w-12 rounded-xl border border-sepia-200 dark:border-sepia-700 text-xl font-bold text-sepia-700 hover:bg-sepia-100 transition-colors"
+              >
+                −
+              </button>
+              <span className="flex-1 text-center text-3xl font-bold text-sepia-900 dark:text-sepia-50">
+                {target}
+              </span>
+              <button
+                onClick={() => setTarget((t) => t + 1)}
+                className="h-12 w-12 rounded-xl border border-sepia-200 dark:border-sepia-700 text-xl font-bold text-sepia-700 hover:bg-sepia-100 transition-colors"
+              >
+                +
+              </button>
+            </div>
+            <p className="text-xs text-sepia-400 text-center mt-2">
+              Acumulá +{target} puntos esta semana en esa middah
+            </p>
           </div>
-        )}
-
-        {/* Target numérico */}
-        <div>
-          <label className="text-xs font-semibold text-sepia-500 uppercase tracking-wide block mb-1.5">
-            Objetivo semanal (puntos a acumular)
-          </label>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setTarget((t) => Math.max(1, t - 1))}
-              className="h-10 w-10 rounded-lg border border-sepia-200 dark:border-sepia-700 text-lg font-bold text-sepia-700 hover:bg-sepia-100 transition-colors"
-            >
-              −
-            </button>
-            <span className="flex-1 text-center text-2xl font-bold text-sepia-900 dark:text-sepia-50">
-              {target}
-            </span>
-            <button
-              onClick={() => setTarget((t) => t + 1)}
-              className="h-10 w-10 rounded-lg border border-sepia-200 dark:border-sepia-700 text-lg font-bold text-sepia-700 hover:bg-sepia-100 transition-colors"
-            >
-              +
-            </button>
-          </div>
-          <p className="text-xs text-sepia-400 text-center mt-1">
-            Ej: objetivo {target} = acumulá +{target} puntos esta semana en esa middah
-          </p>
         </div>
 
-        <div className="flex gap-2 pt-1">
+        {/* Botones — siempre visibles al fondo */}
+        <div className="px-5 py-4 border-t border-sepia-100 dark:border-sepia-700 shrink-0 flex gap-2">
           {onDelete && (
             <button
               onClick={() => { onDelete(); onClose() }}
-              className="p-2.5 rounded-lg border border-red-200 text-red-500 hover:bg-red-50 transition-colors"
+              className="p-3 rounded-xl border border-red-200 text-red-500 hover:bg-red-50 transition-colors"
             >
               <Trash2 size={16} />
             </button>
