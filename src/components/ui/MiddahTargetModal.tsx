@@ -17,7 +17,7 @@ export const MiddahTargetModal = ({ middah, currentTarget, onSave, onClose }: Pr
   const handleClear = () => { onSave(0); onClose() }
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/50 flex items-end justify-center" onClick={onClose}>
+    <div className="fixed inset-0 z-[60] bg-black/50 flex items-end justify-center" onClick={onClose}>
       <div
         className="w-full max-w-lg bg-white dark:bg-sepia-900 rounded-t-2xl flex flex-col"
         style={{ maxHeight: '90dvh' }}
