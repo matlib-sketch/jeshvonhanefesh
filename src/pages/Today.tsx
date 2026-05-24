@@ -64,8 +64,11 @@ export const Today = () => {
     await updateSettings({ middahTargets: next })
   }
 
-  const weeklyScore = (middahId: number) =>
-    weekEntries.reduce((sum, e) => sum + (e.scores[middahId] ?? 0), 0)
+  const weeklyScore = (middahId: number) => {
+    const otherDays = weekEntries.filter((e) => e.date !== todayStr)
+    const pastSum = otherDays.reduce((sum, e) => sum + (e.scores[middahId] ?? 0), 0)
+    return pastSum + (todayEntry?.scores[middahId] ?? 0)
+  }
 
   if (!settings || !todayEntry) {
     return (
