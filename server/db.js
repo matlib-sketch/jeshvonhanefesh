@@ -1,6 +1,12 @@
 import pkg from 'pg'
 const { Pool } = pkg
 
+if (!process.env.DATABASE_URL) {
+  console.error('ERROR: La variable de entorno DATABASE_URL no está configurada.')
+  console.error('Agregá el plugin de PostgreSQL en tu proyecto de Railway.')
+  process.exit(1)
+}
+
 export const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false },
