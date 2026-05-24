@@ -1,0 +1,41 @@
+{
+  "app": {
+    "name": "חשבון הנפש",
+    "tagline": "תרגול יומי של חשבון נפש רוחני"
+  },
+  "nav": {
+    "today": "היום",
+    "history": "היסטוריה",
+    "progress": "התקדמות",
+    "goals": "מטרות",
+    "settings": "הגדרות"
+  },
+  "today": {
+    "cycle": "מחזור {{cycle}}",
+    "week": "שבוע {{week}} מתוך 13",
+    "weekFocus": "מידת השבוע",
+    "prompt": "שאלת התבוננות",
+    "allMiddot": "13 המידות",
+    "journalLabel": "יומן היום",
+    "journalPlaceholder": "הרהורים חופשיים על היום...",
+    "save": "שמור את רשומת היום",
+    "saved": "נשמר!",
+    "alreadySaved": "כבר שמרת היום"
+  },
+  "settings": {
+    "title": "הגדרות",
+    "language": "שפה",
+    "theme": "ערכת נושא",
+    "themeLight": "בהיר",
+    "themeDark": "כהה",
+    "themeSystem": "מערכת"
+  },
+  "common": {
+    "loading": "טוען...",
+    "error": "משהו השתבש",
+    "close": "סגור",
+    "cancel": "ביטול",
+    "save": "שמור",
+    "back": "חזור"
+  }
+}
