@@ -128,6 +128,12 @@ export const Today = () => {
     return pastSum + (todayEntry?.scores[middahId] ?? 0)
   }
 
+  const spiritualWeeklySum = (key: string) => {
+    const otherDays = weekEntries.filter((e) => e.date !== todayStr)
+    const pastSum = otherDays.reduce((sum, e) => sum + (e.spiritualChecks?.[key] ?? 0), 0)
+    return pastSum + (todayEntry?.spiritualChecks?.[key] ?? 0)
+  }
+
   if (!settings || !todayEntry) {
     return (
       <div className="flex items-center justify-center h-64 text-sepia-500">
@@ -279,18 +285,34 @@ export const Today = () => {
         <Card className="divide-y divide-sepia-100 dark:divide-sepia-700 !p-0 overflow-hidden">
           {SPIRITUAL_CHECKS.map((check) => {
             const currentVal = todayEntry.spiritualChecks?.[check.key] ?? -1
+            const weekSum = spiritualWeeklySum(check.key)
+            const size = 44
+            const sw = 5
+            const r = (size - sw) / 2
+            const cx = size / 2
             return (
               <div key={check.key} className="px-3 py-3 space-y-2">
-                <div>
-                  <div className="flex items-baseline gap-1.5">
-                    <span className="font-serif text-base text-sepia-900 dark:text-sepia-100">
-                      {check.hebrew}
-                    </span>
-                    <span className="text-xs font-semibold text-blue-deep dark:text-blue-400">
-                      {check.label}
-                    </span>
+                <div className="flex items-center gap-2">
+                  <div className="flex-1">
+                    <div className="flex items-baseline gap-1.5">
+                      <span className="font-serif text-base text-sepia-900 dark:text-sepia-100">
+                        {check.hebrew}
+                      </span>
+                      <span className="text-xs font-semibold text-blue-deep dark:text-blue-400">
+                        {check.label}
+                      </span>
+                    </div>
+                    <p className="text-xs text-sepia-500 dark:text-sepia-400">{check.sublabel}</p>
                   </div>
-                  <p className="text-xs text-sepia-500 dark:text-sepia-400">{check.sublabel}</p>
+                  <div className="shrink-0 flex flex-col items-center">
+                    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+                      <circle cx={cx} cy={cx} r={r} fill="none" stroke="currentColor" strokeWidth={sw} strokeDasharray="4 4" className="text-sepia-200 dark:text-sepia-700" />
+                      <text x={cx} y={cx + 4} textAnchor="middle" fontSize="12" fontWeight="700" fill={weekSum > 0 ? '#1e3a5f' : '#b89f7c'}>
+                        {weekSum > 0 ? `+${weekSum}` : weekSum}
+                      </text>
+                    </svg>
+                    <p className="text-[9px] text-sepia-400 -mt-0.5">sem</p>
+                  </div>
                 </div>
                 <div className="flex flex-wrap gap-1.5">
                   {check.options.map((opt) => (
