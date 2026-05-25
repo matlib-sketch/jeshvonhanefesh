@@ -11,6 +11,7 @@ interface EntriesState {
   loadRange: (from: string, to: string) => Promise<void>
   loadAll: () => Promise<void>
   setScore: (middahId: number, score: Score) => void
+  setSpiritualCheck: (key: string, value: number) => void
   setJournal: (text: string) => void
   saveToday: () => Promise<void>
 }
@@ -26,14 +27,17 @@ export const useEntriesStore = create<EntriesState>((set, get) => ({
     set({ loading: true })
     const date = today()
     const existing = await getEntry(date)
-    const entry: DailyEntry = existing ?? {
-      date,
-      scores: {},
-      journal: '',
-      weekMiddahFocus,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    }
+    const entry: DailyEntry = existing
+      ? { spiritualChecks: {}, ...existing }
+      : {
+          date,
+          scores: {},
+          spiritualChecks: {},
+          journal: '',
+          weekMiddahFocus,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        }
     set({ todayEntry: entry, loading: false })
   },
 
@@ -56,6 +60,18 @@ export const useEntriesStore = create<EntriesState>((set, get) => ({
       todayEntry: {
         ...current,
         scores: { ...current.scores, [middahId]: score },
+        updatedAt: new Date().toISOString(),
+      },
+    })
+  },
+
+  setSpiritualCheck: (key, value) => {
+    const current = get().todayEntry
+    if (!current) return
+    set({
+      todayEntry: {
+        ...current,
+        spiritualChecks: { ...(current.spiritualChecks ?? {}), [key]: value },
         updatedAt: new Date().toISOString(),
       },
     })
