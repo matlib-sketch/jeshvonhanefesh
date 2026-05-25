@@ -10,6 +10,7 @@ router.use(requireAuth)
 const toEntry = (r) => ({
   date: r.date,
   scores: r.scores,
+  spiritualChecks: r.spiritual_checks ?? {},
   journal: r.journal,
   weekMiddahFocus: r.week_middah_focus,
   createdAt: r.created_at,
@@ -48,7 +49,7 @@ router.put('/settings', async (req, res) => {
 router.get('/entries', async (req, res) => {
   try {
     const { from, to } = req.query
-    let text = `SELECT date, scores, journal, week_middah_focus, created_at, updated_at
+    let text = `SELECT date, scores, spiritual_checks, journal, week_middah_focus, created_at, updated_at
                 FROM entries WHERE user_id = $1`
     const params = [req.userId]
     if (from && to) {
@@ -65,13 +66,13 @@ router.get('/entries', async (req, res) => {
 
 router.put('/entries/:date', async (req, res) => {
   try {
-    const { scores, journal, weekMiddahFocus } = req.body
+    const { scores, spiritualChecks, journal, weekMiddahFocus } = req.body
     await query(
-      `INSERT INTO entries (user_id, date, scores, journal, week_middah_focus)
-       VALUES ($1, $2, $3::jsonb, $4, $5)
+      `INSERT INTO entries (user_id, date, scores, spiritual_checks, journal, week_middah_focus)
+       VALUES ($1, $2, $3::jsonb, $4::jsonb, $5, $6)
        ON CONFLICT (user_id, date) DO UPDATE
-         SET scores = $3::jsonb, journal = $4, week_middah_focus = $5, updated_at = NOW()`,
-      [req.userId, req.params.date, JSON.stringify(scores ?? {}), journal ?? '', weekMiddahFocus ?? null]
+         SET scores = $3::jsonb, spiritual_checks = $4::jsonb, journal = $5, week_middah_focus = $6, updated_at = NOW()`,
+      [req.userId, req.params.date, JSON.stringify(scores ?? {}), JSON.stringify(spiritualChecks ?? {}), journal ?? '', weekMiddahFocus ?? null]
     )
     res.json({ ok: true })
   } catch (err) {
@@ -149,7 +150,7 @@ router.get('/export', async (req, res) => {
   try {
     const [entriesRes, goalsRes, settingsRes] = await Promise.all([
       query(
-        'SELECT date, scores, journal, week_middah_focus, created_at, updated_at FROM entries WHERE user_id=$1 ORDER BY date',
+        'SELECT date, scores, spiritual_checks, journal, week_middah_focus, created_at, updated_at FROM entries WHERE user_id=$1 ORDER BY date',
         [req.userId]
       ),
       query('SELECT id, data FROM goals WHERE user_id=$1 ORDER BY created_at DESC', [req.userId]),
@@ -177,11 +178,11 @@ router.post('/import', async (req, res) => {
     await client.query('DELETE FROM goals WHERE user_id = $1', [req.userId])
     for (const entry of entries) {
       await client.query(
-        `INSERT INTO entries (user_id, date, scores, journal, week_middah_focus)
-         VALUES ($1, $2, $3::jsonb, $4, $5)
+        `INSERT INTO entries (user_id, date, scores, spiritual_checks, journal, week_middah_focus)
+         VALUES ($1, $2, $3::jsonb, $4::jsonb, $5, $6)
          ON CONFLICT (user_id, date) DO UPDATE
-           SET scores=$3::jsonb, journal=$4, week_middah_focus=$5, updated_at=NOW()`,
-        [req.userId, entry.date, JSON.stringify(entry.scores ?? {}), entry.journal ?? '', entry.weekMiddahFocus ?? null]
+           SET scores=$3::jsonb, spiritual_checks=$4::jsonb, journal=$5, week_middah_focus=$6, updated_at=NOW()`,
+        [req.userId, entry.date, JSON.stringify(entry.scores ?? {}), JSON.stringify(entry.spiritualChecks ?? {}), entry.journal ?? '', entry.weekMiddahFocus ?? null]
       )
     }
     for (const goal of goals) {

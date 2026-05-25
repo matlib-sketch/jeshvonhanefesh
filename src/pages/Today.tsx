@@ -19,10 +19,68 @@ import type { DailyEntry, Middah, Score } from '../core/domain/types'
 
 const SCORES: Score[] = [-2, -1, 0, 1, 2]
 
+const SPIRITUAL_CHECKS = [
+  {
+    key: 'emuna',
+    hebrew: 'אמונה',
+    label: 'Emuna',
+    sublabel: '¿Cuántas veces pensaste en Hashem hoy?',
+    options: [
+      { value: 0, label: 'Ninguna' },
+      { value: 1, label: 'Una vez' },
+      { value: 2, label: 'Más de una' },
+      { value: 3, label: 'Todo el día' },
+    ],
+  },
+  {
+    key: 'kavana_tefilin',
+    hebrew: 'כוונה בתפילין',
+    label: 'Kavaná en Tefilin',
+    sublabel: '¿Tuviste kavaná al ponerte los Tefilin?',
+    options: [
+      { value: 0, label: 'No' },
+      { value: 1, label: 'Sí' },
+    ],
+  },
+  {
+    key: 'kavana_shema',
+    hebrew: 'כוונה בשמע',
+    label: 'Kavaná en el Shemá',
+    sublabel: '¿Tuviste kavaná en el Shemá?',
+    options: [
+      { value: 0, label: 'No' },
+      { value: 1, label: 'Sí, en el 1°' },
+      { value: 2, label: 'Sí, en ambos' },
+    ],
+  },
+  {
+    key: 'yietzer',
+    hebrew: 'יצר הרע',
+    label: 'Luché contra mi Yétzer',
+    sublabel: '¿Luchaste contra tu Yétzer Hará hoy?',
+    options: [
+      { value: 0, label: 'Nunca' },
+      { value: 1, label: 'Al menos una vez' },
+      { value: 2, label: 'Mucho' },
+    ],
+  },
+  {
+    key: 'estudio',
+    hebrew: 'תורה',
+    label: 'Estudio',
+    sublabel: '¿Estudiaste lo que querías hoy?',
+    options: [
+      { value: 0, label: 'No' },
+      { value: 1, label: 'Casi' },
+      { value: 2, label: 'Sí' },
+    ],
+  },
+] as const
+
 export const Today = () => {
   const { t } = useTranslation()
   const { settings, updateSettings } = useSettingsStore()
-  const { todayEntry, loadToday, setScore, setJournal, saveToday } = useEntriesStore()
+  const { todayEntry, loadToday, setScore, setSpiritualCheck, setJournal, saveToday } = useEntriesStore()
   const [saved, setSaved] = useState(false)
   const [infoMiddah, setInfoMiddah] = useState<Middah | null>(null)
   const [editingMiddah, setEditingMiddah] = useState<Middah | null>(null)
@@ -205,6 +263,49 @@ export const Today = () => {
                       selected={currentScore === s}
                       onClick={() => setScore(middah.id, s)}
                     />
+                  ))}
+                </div>
+              </div>
+            )
+          })}
+        </Card>
+      </div>
+
+      {/* Chequeos espirituales */}
+      <div>
+        <h3 className="text-xs font-semibold text-sepia-500 uppercase tracking-wide mb-2 px-1">
+          Chequeo espiritual del día
+        </h3>
+        <Card className="divide-y divide-sepia-100 dark:divide-sepia-700 !p-0 overflow-hidden">
+          {SPIRITUAL_CHECKS.map((check) => {
+            const currentVal = todayEntry.spiritualChecks?.[check.key] ?? -1
+            return (
+              <div key={check.key} className="px-3 py-3 space-y-2">
+                <div>
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="font-serif text-base text-sepia-900 dark:text-sepia-100">
+                      {check.hebrew}
+                    </span>
+                    <span className="text-xs font-semibold text-blue-deep dark:text-blue-400">
+                      {check.label}
+                    </span>
+                  </div>
+                  <p className="text-xs text-sepia-500 dark:text-sepia-400">{check.sublabel}</p>
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {check.options.map((opt) => (
+                    <button
+                      key={opt.value}
+                      onClick={() => setSpiritualCheck(check.key, opt.value)}
+                      className={[
+                        'px-3 py-1.5 rounded-lg text-xs font-medium border transition-all',
+                        currentVal === opt.value
+                          ? 'bg-blue-deep text-white border-blue-deep shadow-sm'
+                          : 'bg-white dark:bg-sepia-800 text-sepia-700 dark:text-sepia-300 border-sepia-200 dark:border-sepia-600 hover:border-blue-deep hover:text-blue-deep',
+                      ].join(' ')}
+                    >
+                      {opt.value} · {opt.label}
+                    </button>
                   ))}
                 </div>
               </div>

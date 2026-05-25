@@ -18,6 +18,7 @@ export type Score = -2 | -1 | 0 | 1 | 2;
 export interface DailyEntry {
   date: string;
   scores: Record<number, Score>;
+  spiritualChecks: Record<string, number>;
   journal: string;
   weekMiddahFocus: number;
   createdAt: string;

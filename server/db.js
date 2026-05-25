@@ -47,4 +47,8 @@ export const initSchema = async () => {
       created_at  TIMESTAMPTZ DEFAULT NOW()
     );
   `)
+
+  await pool.query(
+    `ALTER TABLE entries ADD COLUMN IF NOT EXISTS spiritual_checks JSONB NOT NULL DEFAULT '{}'`
+  )
 }
