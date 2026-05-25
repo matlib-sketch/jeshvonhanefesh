@@ -28,7 +28,7 @@ export const useEntriesStore = create<EntriesState>((set, get) => ({
     const date = today()
     const existing = await getEntry(date)
     const entry: DailyEntry = existing
-      ? { spiritualChecks: {}, ...existing }
+      ? { ...existing, spiritualChecks: existing.spiritualChecks ?? {} }
       : {
           date,
           scores: {},
