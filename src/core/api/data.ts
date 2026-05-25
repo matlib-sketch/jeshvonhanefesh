@@ -12,6 +12,7 @@ const DEFAULT_SETTINGS: UserSettings = {
   onboardingCompleted: false,
   disabledMiddot: [],
   middahTargets: {},
+  spiritualCheckTargets: {},
   customMiddot: [],
 }
 

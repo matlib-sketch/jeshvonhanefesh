@@ -45,5 +45,6 @@ export interface UserSettings {
   onboardingCompleted: boolean;
   disabledMiddot: number[];
   middahTargets: Record<number, number>;
+  spiritualCheckTargets: Record<string, number>;
   customMiddot: CustomMiddah[];
 }

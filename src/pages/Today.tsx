@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
-import { Save, CheckCircle, Info } from 'lucide-react'
+import { Save, CheckCircle as CheckCircleIcon, Info } from 'lucide-react'
 import { HDate } from '@hebcal/core'
 import { Card } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
@@ -10,6 +10,8 @@ import { ScoreButton } from '../components/ui/ScoreButton'
 import { CircularProgress } from '../components/ui/CircularProgress'
 import { MiddahInfoSheet } from '../components/ui/MiddahInfoSheet'
 import { MiddahTargetModal } from '../components/ui/MiddahTargetModal'
+import { CheckCircle } from '../components/ui/CheckCircle'
+import { CheckTargetModal } from '../components/ui/CheckTargetModal'
 import { useSettingsStore } from '../core/stores/settingsStore'
 import { useEntriesStore } from '../core/stores/entriesStore'
 import { getEntriesRange } from '../core/api/data'
@@ -84,6 +86,7 @@ export const Today = () => {
   const [saved, setSaved] = useState(false)
   const [infoMiddah, setInfoMiddah] = useState<Middah | null>(null)
   const [editingMiddah, setEditingMiddah] = useState<Middah | null>(null)
+  const [editingCheck, setEditingCheck] = useState<typeof SPIRITUAL_CHECKS[number] | null>(null)
   const [weekEntries, setWeekEntries] = useState<DailyEntry[]>([])
 
   const todayStr = format(new Date(), 'yyyy-MM-dd')
@@ -97,6 +100,7 @@ export const Today = () => {
   const allMiddot = getAllMiddot(settings?.customMiddot)
   const activeMiddot = allMiddot.filter((m) => !disabledMiddot.includes(m.id))
   const middahTargets = settings?.middahTargets ?? {}
+  const spiritualCheckTargets = settings?.spiritualCheckTargets ?? {}
 
   useEffect(() => {
     if (settings) loadToday(focusMiddah.id)
@@ -120,6 +124,13 @@ export const Today = () => {
     if (target === 0) delete next[middahId]
     else next[middahId] = target
     await updateSettings({ middahTargets: next })
+  }
+
+  const handleSaveCheckTarget = async (key: string, target: number) => {
+    const next = { ...spiritualCheckTargets }
+    if (target === 0) delete next[key]
+    else next[key] = target
+    await updateSettings({ spiritualCheckTargets: next })
   }
 
   const weeklyScore = (middahId: number) => {
@@ -286,10 +297,7 @@ export const Today = () => {
           {SPIRITUAL_CHECKS.map((check) => {
             const currentVal = todayEntry.spiritualChecks?.[check.key] ?? -1
             const weekSum = spiritualWeeklySum(check.key)
-            const size = 44
-            const sw = 5
-            const r = (size - sw) / 2
-            const cx = size / 2
+            const checkTarget = spiritualCheckTargets[check.key] ?? 0
             return (
               <div key={check.key} className="px-3 py-3 space-y-2">
                 <div className="flex items-center gap-2">
@@ -304,15 +312,12 @@ export const Today = () => {
                     </div>
                     <p className="text-xs text-sepia-500 dark:text-sepia-400">{check.sublabel}</p>
                   </div>
-                  <div className="shrink-0 flex flex-col items-center">
-                    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-                      <circle cx={cx} cy={cx} r={r} fill="none" stroke="currentColor" strokeWidth={sw} strokeDasharray="4 4" className="text-sepia-200 dark:text-sepia-700" />
-                      <text x={cx} y={cx + 4} textAnchor="middle" fontSize="12" fontWeight="700" fill={weekSum > 0 ? '#1e3a5f' : '#b89f7c'}>
-                        {weekSum > 0 ? `+${weekSum}` : weekSum}
-                      </text>
-                    </svg>
-                    <p className="text-[9px] text-sepia-400 -mt-0.5">sem</p>
-                  </div>
+                  <CheckCircle
+                    value={weekSum}
+                    target={checkTarget}
+                    size={52}
+                    onEdit={() => setEditingCheck(check)}
+                  />
                 </div>
                 <div className="flex flex-wrap gap-1.5">
                   {check.options.map((opt) => (
@@ -353,7 +358,7 @@ export const Today = () => {
       {/* Botón guardar */}
       <Button fullWidth size="lg" variant={saved ? 'secondary' : 'primary'} onClick={handleSave} disabled={saved}>
         {saved ? (
-          <><CheckCircle size={18} /> {t('today.saved')}</>
+          <><CheckCircleIcon size={18} /> {t('today.saved')}</>
         ) : (
           <><Save size={18} /> {t('today.save')}</>
         )}
@@ -367,6 +372,16 @@ export const Today = () => {
           currentTarget={middahTargets[editingMiddah.id] ?? 0}
           onSave={(target) => handleSaveTarget(editingMiddah.id, target)}
           onClose={() => setEditingMiddah(null)}
+        />
+      )}
+
+      {editingCheck && (
+        <CheckTargetModal
+          hebrew={editingCheck.hebrew}
+          label={editingCheck.label}
+          currentTarget={spiritualCheckTargets[editingCheck.key] ?? 0}
+          onSave={(target) => handleSaveCheckTarget(editingCheck.key, target)}
+          onClose={() => setEditingCheck(null)}
         />
       )}
     </div>
