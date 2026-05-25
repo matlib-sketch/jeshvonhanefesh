@@ -35,8 +35,6 @@ export const initSchema = async () => {
       PRIMARY KEY (user_id, date)
     );
 
-    ALTER TABLE entries ADD COLUMN IF NOT EXISTS spiritual_checks JSONB NOT NULL DEFAULT '{}';
-
     CREATE TABLE IF NOT EXISTS settings (
       user_id  UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
       data     JSONB NOT NULL DEFAULT '{}'
@@ -49,4 +47,8 @@ export const initSchema = async () => {
       created_at  TIMESTAMPTZ DEFAULT NOW()
     );
   `)
+
+  await pool.query(
+    `ALTER TABLE entries ADD COLUMN IF NOT EXISTS spiritual_checks JSONB NOT NULL DEFAULT '{}'`
+  )
 }
