@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { CalendarDays, BarChart2, Target, Settings, Home } from 'lucide-react'
 
 const tabs = [
-  { to: '/', icon: Home, key: 'nav.today', exact: true },
+  { to: '/today', icon: Home, key: 'nav.today', exact: false },
   { to: '/history', icon: CalendarDays, key: 'nav.history', exact: false },
   { to: '/progress', icon: BarChart2, key: 'nav.progress', exact: false },
   { to: '/goals', icon: Target, key: 'nav.goals', exact: false },

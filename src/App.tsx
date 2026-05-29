@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { differenceInDays, parseISO } from 'date-fns'
 import { BottomNav } from './components/ui/BottomNav'
 import { Onboarding } from './pages/Onboarding'
 import { Today } from './pages/Today'
@@ -23,16 +24,22 @@ const AppShell = () => {
 
   if (!settings.onboardingCompleted) return <Onboarding />
 
+  const daysSinceStart = settings.cycleStartDate
+    ? differenceInDays(new Date(), parseISO(settings.cycleStartDate))
+    : 0
+  const defaultRoute = daysSinceStart >= 7 ? '/history' : '/today'
+
   return (
     <div className="min-h-screen bg-sepia-50 dark:bg-sepia-950">
       <main className="max-w-lg mx-auto px-4 pt-6 pb-24">
         <Routes>
-          <Route path="/" element={<Today />} />
+          <Route path="/" element={<Navigate to={defaultRoute} replace />} />
+          <Route path="/today" element={<Today />} />
           <Route path="/history" element={<History />} />
           <Route path="/progress" element={<Progress />} />
           <Route path="/goals" element={<Goals />} />
           <Route path="/settings" element={<Settings />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<Navigate to={defaultRoute} replace />} />
         </Routes>
       </main>
       <BottomNav />

@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, subMonths, addMonths, isSameMonth, isToday } from 'date-fns'
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, subMonths, addMonths, isSameMonth, isToday, parseISO } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { ChevronLeft, ChevronRight, X } from 'lucide-react'
 import { Card } from '../components/ui/Card'
 import { useEntriesStore } from '../core/stores/entriesStore'
+import { getEntriesRange } from '../core/api/data'
 import { getMiddahById, MIDDOT } from '../core/domain/middot'
+import { getCurrentWeekStart, getCurrentWeekEnd } from '../core/utils/cycle'
 import type { DailyEntry } from '../core/domain/types'
 
 const SCORE_LABEL: Record<string, string> = {
@@ -31,6 +33,7 @@ export const History = () => {
   const { entries, loadRange } = useEntriesStore()
   const [month, setMonth] = useState(new Date())
   const [selected, setSelected] = useState<DailyEntry | null>(null)
+  const [weekEntries, setWeekEntries] = useState<DailyEntry[]>([])
 
   useEffect(() => {
     const from = format(startOfMonth(month), 'yyyy-MM-dd')
@@ -38,15 +41,70 @@ export const History = () => {
     loadRange(from, to)
   }, [month])
 
+  useEffect(() => {
+    getEntriesRange(getCurrentWeekStart(), getCurrentWeekEnd())
+      .then(setWeekEntries)
+      .catch(() => {})
+  }, [])
+
   const entriesByDate = Object.fromEntries(entries.map((e) => [e.date, e]))
   const days = eachDayOfInterval({ start: startOfMonth(month), end: endOfMonth(month) })
   const startPad = getDay(startOfMonth(month))
+
+  // Resumen semanal
+  const weekDays = eachDayOfInterval({
+    start: parseISO(getCurrentWeekStart() + 'T12:00:00'),
+    end: parseISO(getCurrentWeekEnd() + 'T12:00:00'),
+  })
+  const weekDatesWithEntry = new Set(weekEntries.map((e) => e.date))
+  const weekCount = weekDays.filter((d) => weekDatesWithEntry.has(format(d, 'yyyy-MM-dd'))).length
+  const weekTotal = weekDays.length
+  const weekMessage =
+    weekCount >= 5
+      ? `¡Pusiste ${weekCount}/${weekTotal} días, bien!`
+      : weekCount >= 2
+      ? `${weekCount}/${weekTotal} días — con más ganas la próxima semana!`
+      : `${weekCount}/${weekTotal} días — vamos que se puede, ¡esta semana sí lo logras!`
+  const weekColor =
+    weekCount >= 5 ? 'bg-teal-50 border-teal-200 dark:bg-teal-900/20 dark:border-teal-700' :
+    weekCount >= 2 ? 'bg-amber-50 border-amber-200 dark:bg-amber-900/20 dark:border-amber-700' :
+    'bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-700'
+  const weekTextColor =
+    weekCount >= 5 ? 'text-teal-700 dark:text-teal-300' :
+    weekCount >= 2 ? 'text-amber-700 dark:text-amber-300' :
+    'text-red-700 dark:text-red-300'
 
   return (
     <div className="space-y-4 pb-6">
       <h1 className="text-xl font-semibold text-sepia-900 dark:text-sepia-50 px-1">
         {t('history.title')}
       </h1>
+
+      {/* Resumen de la semana actual */}
+      <div className={`rounded-xl border px-4 py-3 ${weekColor}`}>
+        <p className="text-xs font-semibold text-sepia-500 dark:text-sepia-400 uppercase tracking-wide mb-0.5">
+          Esta semana
+        </p>
+        <p className={`text-sm font-semibold ${weekTextColor}`}>{weekMessage}</p>
+        <div className="flex gap-1 mt-2">
+          {weekDays.map((d) => {
+            const dateStr = format(d, 'yyyy-MM-dd')
+            const hasEntry = weekDatesWithEntry.has(dateStr)
+            const today = isToday(d)
+            return (
+              <div
+                key={dateStr}
+                className={[
+                  'flex-1 h-1.5 rounded-full',
+                  hasEntry
+                    ? weekCount >= 5 ? 'bg-teal-500' : weekCount >= 2 ? 'bg-amber-400' : 'bg-red-400'
+                    : today ? 'bg-sepia-300 dark:bg-sepia-600' : 'bg-sepia-200 dark:bg-sepia-700',
+                ].join(' ')}
+              />
+            )
+          })}
+        </div>
+      </div>
 
       {/* Navegación de mes */}
       <Card className="!p-3">
