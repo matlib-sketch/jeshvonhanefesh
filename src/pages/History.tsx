@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, subMonths, addMonths, isSameMonth, isToday, parseISO } from 'date-fns'
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, subMonths, addMonths, isSameMonth, isToday, subDays, parseISO } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { ChevronLeft, ChevronRight, X } from 'lucide-react'
 import { Card } from '../components/ui/Card'
 import { useEntriesStore } from '../core/stores/entriesStore'
 import { getEntriesRange } from '../core/api/data'
 import { getMiddahById, MIDDOT } from '../core/domain/middot'
-import { getCurrentWeekStart, getCurrentWeekEnd } from '../core/utils/cycle'
+
 import type { DailyEntry } from '../core/domain/types'
 
 const SCORE_LABEL: Record<string, string> = {
@@ -41,8 +41,11 @@ export const History = () => {
     loadRange(from, to)
   }, [month])
 
+  const rollingFrom = format(subDays(new Date(), 6), 'yyyy-MM-dd')
+  const rollingTo   = format(new Date(), 'yyyy-MM-dd')
+
   useEffect(() => {
-    getEntriesRange(getCurrentWeekStart(), getCurrentWeekEnd())
+    getEntriesRange(rollingFrom, rollingTo)
       .then(setWeekEntries)
       .catch(() => {})
   }, [])
@@ -51,10 +54,10 @@ export const History = () => {
   const days = eachDayOfInterval({ start: startOfMonth(month), end: endOfMonth(month) })
   const startPad = getDay(startOfMonth(month))
 
-  // Resumen semanal
+  // Resumen: últimos 7 días (ventana deslizante)
   const weekDays = eachDayOfInterval({
-    start: parseISO(getCurrentWeekStart() + 'T12:00:00'),
-    end: parseISO(getCurrentWeekEnd() + 'T12:00:00'),
+    start: parseISO(rollingFrom + 'T12:00:00'),
+    end:   parseISO(rollingTo   + 'T12:00:00'),
   })
   const weekDatesWithEntry = new Set(weekEntries.map((e) => e.date))
   const weekCount = weekDays.filter((d) => weekDatesWithEntry.has(format(d, 'yyyy-MM-dd'))).length
@@ -83,7 +86,7 @@ export const History = () => {
       {/* Resumen de la semana actual */}
       <div className={`rounded-xl border px-4 py-3 ${weekColor}`}>
         <p className="text-xs font-semibold text-sepia-500 dark:text-sepia-400 uppercase tracking-wide mb-0.5">
-          Esta semana
+          Últimos 7 días
         </p>
         <p className={`text-sm font-semibold ${weekTextColor}`}>{weekMessage}</p>
         <div className="flex gap-1 mt-2">
