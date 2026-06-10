@@ -48,6 +48,53 @@ npm run preview
 
 Ambos funcionan sin configuración extra.
 
+## App nativa (Capacitor)
+
+El proyecto incluye un proyecto Android nativo en `android/`, generado con [Capacitor](https://capacitorjs.com). La misma base de código web se empaqueta como app instalable, con splash screen nativo y **recordatorio diario por notificación** (configurable en Ajustes → Recordatorio).
+
+### Compilar para Android
+
+Requisitos: [Android Studio](https://developer.android.com/studio) (incluye el SDK).
+
+```bash
+# 1. Configurar la URL del backend desplegado (la app nativa no tiene servidor propio)
+cp .env.example .env
+# Editar .env: VITE_API_URL=https://tu-backend.up.railway.app
+
+# 2. Compilar la web y sincronizar con el proyecto nativo
+npm run build
+npx cap sync android
+
+# 3. Abrir en Android Studio (o compilar por línea de comandos)
+npx cap open android          # abre Android Studio → Run ▶
+# — o bien —
+cd android && ./gradlew assembleDebug   # genera el APK en app/build/outputs/apk/debug/
+```
+
+Para publicar en Google Play: generar un `.aab` firmado con `./gradlew bundleRelease` (ver [docs de firma](https://developer.android.com/studio/publish/app-signing)) y subirlo a la [Play Console](https://play.google.com/console) (cuenta de desarrollador: USD 25, pago único).
+
+### iOS (pendiente)
+
+Requiere una Mac con Xcode (o un servicio de build en la nube como Codemagic):
+
+```bash
+npm install @capacitor/ios
+npx cap add ios
+npx cap open ios
+```
+
+Antes de publicar en iOS conviene migrar el almacenamiento de IndexedDB a SQLite nativo (`@capacitor-community/sqlite`), porque WKWebView puede purgar IndexedDB ante presión de espacio.
+
+### Regenerar íconos y splash
+
+Los recursos nativos se generan desde `assets/` con:
+
+```bash
+npx @capacitor/assets generate --android \
+  --iconBackgroundColor '#1e3a5f' --iconBackgroundColorDark '#1e3a5f' \
+  --splashBackgroundColor '#f5f0e8' --splashBackgroundColorDark '#0d0b07'
+```
+
 ## Instalar como PWA
 
 **iPhone (Safari):**
@@ -87,4 +134,5 @@ La carpeta `/core` no importa nada de `react-dom`, `window` ni APIs de browser �
 | Gráficos | Recharts |
 | Fechas | date-fns + @hebcal/core |
 | PWA | vite-plugin-pwa |
+| App nativa | Capacitor (Android) |
 | i18n | react-i18next |

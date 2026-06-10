@@ -1,0 +1,65 @@
+name: Compilar app Android
+
+# Se ejecuta manualmente desde la pestaña Actions de GitHub:
+# Actions → "Compilar app Android" → Run workflow
+on:
+  workflow_dispatch:
+    inputs:
+      version_name:
+        description: 'Versión visible para usuarios (ej: 1.0)'
+        required: false
+        default: '1.0'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Compilar la web
+        run: npm run build
+        env:
+          VITE_API_URL: ${{ secrets.VITE_API_URL }}
+
+      - name: Sincronizar con el proyecto Android
+        run: npx cap sync android
+
+      - name: Restaurar el keystore de firma
+        run: echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > ${{ runner.temp }}/upload-keystore.jks
+
+      - name: Compilar AAB (para Google Play) y APK (instalación directa)
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew bundleRelease assembleRelease
+        env:
+          ANDROID_KEYSTORE_PATH: ${{ runner.temp }}/upload-keystore.jks
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: upload
+          ANDROID_VERSION_CODE: ${{ github.run_number }}
+          ANDROID_VERSION_NAME: ${{ inputs.version_name }}
+
+      - name: Publicar AAB (subir este archivo a Google Play)
+        uses: actions/upload-artifact@v4
+        with:
+          name: cheshbon-hanefesh-aab
+          path: android/app/build/outputs/bundle/release/app-release.aab
+
+      - name: Publicar APK (para instalar directo en un teléfono)
+        uses: actions/upload-artifact@v4
+        with:
+          name: cheshbon-hanefesh-apk
+          path: android/app/build/outputs/apk/release/app-release.apk

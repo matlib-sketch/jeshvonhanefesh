@@ -3,6 +3,10 @@
     "name": "Cheshbon HaNefesh",
     "tagline": "Daily spiritual self-evaluation practice"
   },
+  "reminder": {
+    "title": "Cheshbon HaNefesh",
+    "body": "Did you do your cheshbon today? Take a minute to review your middot."
+  },
   "nav": {
     "today": "Today",
     "history": "History",

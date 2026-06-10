@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Cheshbon HaNefesh</string>
+    <string name="title_activity_main">Cheshbon HaNefesh</string>
+    <string name="package_name">com.jeshvonhanefesh.app</string>
+    <string name="custom_url_scheme">com.jeshvonhanefesh.app</string>
+</resources>

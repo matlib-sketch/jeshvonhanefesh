@@ -1,4 +1,5 @@
 import express from 'express'
+import cors from 'cors'
 import { fileURLToPath } from 'url'
 import { dirname, join } from 'path'
 import { initSchema } from './db.js'
@@ -8,6 +9,8 @@ import meRouter from './routes/me.js'
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const app = express()
 
+// La app nativa (Capacitor) corre desde capacitor://localhost / https://localhost
+app.use(cors({ origin: ['capacitor://localhost', 'https://localhost', 'http://localhost'] }))
 app.use(express.json({ limit: '10mb' }))
 
 app.use('/api/auth', authRouter)
