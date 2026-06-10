@@ -3,6 +3,10 @@
     "name": "Cheshbon HaNefesh",
     "tagline": "Práctica diaria de auto-evaluación espiritual"
   },
+  "reminder": {
+    "title": "Cheshbon HaNefesh",
+    "body": "¿Hiciste tu jeshbón de hoy? Tomate un minuto para evaluar tus middot."
+  },
   "nav": {
     "today": "Hoy",
     "history": "Historial",

@@ -6,9 +6,14 @@ export const getUserId = (): string | null => localStorage.getItem('authUserId')
 export const setUserId = (id: string): void => { localStorage.setItem('authUserId', id) }
 export const clearUserId = (): void => { localStorage.removeItem('authUserId') }
 
+// En web el proxy de Vite (dev) o el mismo origen (prod) resuelven /api.
+// En builds nativas (Capacitor) no hay servidor propio: VITE_API_URL debe
+// apuntar al backend desplegado (ej. https://mi-app.up.railway.app).
+const API_BASE: string = import.meta.env.VITE_API_URL ?? ''
+
 export const api = async <T = unknown>(path: string, options: RequestInit = {}): Promise<T> => {
   const token = getToken()
-  const res = await fetch(`/api${path}`, {
+  const res = await fetch(`${API_BASE}/api${path}`, {
     ...options,
     headers: {
       'Content-Type': 'application/json',

@@ -12,6 +12,7 @@ import { ProfileSelector } from './pages/ProfileSelector'
 import { useSettingsStore } from './core/stores/settingsStore'
 import { useProfileStore } from './core/stores/profileStore'
 import i18n from './web/i18n'
+import { syncDailyReminder } from './web/notifications'
 
 const AppShell = () => {
   const { settings } = useSettingsStore()
@@ -70,6 +71,7 @@ function App() {
       else root.classList.remove('dark')
     }
     document.documentElement.dir = settings.language === 'he' ? 'rtl' : 'ltr'
+    void syncDailyReminder(settings.reminderTime)
   }, [settings])
 
   // Mientras verificamos el perfil
